@@ -1,0 +1,6 @@
+language: ruby
+
+before_script:
+  - bundle exec rake db:reset db:setup
+
+script: bundle exec rspec

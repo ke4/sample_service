@@ -1,6 +1,5 @@
 source 'https://rubygems.org'
 
-
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '>= 5.0.0.beta3', '< 5.1'
 # Use sqlite3 as the database for Active Record
@@ -20,9 +19,19 @@ gem 'puma'
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
 # gem 'rack-cors'
 
+# Use ActiveModelSerializers to serialize JSON requests/responses
+gem 'active_model_serializers', '~> 0.10.0.rc4'
+
+# Allows us to use binary uuid columns.
+# Currently not working with Rails 5 beta3
+#gem 'activeuuid'
+gem 'uuid'
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug'
+  gem 'rspec-rails', '~> 3.5.0.beta3'
+  gem 'factory_girl_rails'
 end
 
 group :development do
