@@ -1,4 +1,4 @@
-class MaterialTypesController < ApplicationController
+class Api::V1::MaterialTypesController < Api::V1::ApplicationController
   before_action :set_material_type, only: [:show, :update, :destroy]
 
   # GET /material_types

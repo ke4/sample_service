@@ -1,4 +1,4 @@
-class MetadataController < ApplicationController
+class Api::V1::MetadataController < Api::V1::ApplicationController
   before_action :set_metadatum, only: [:show, :update, :destroy]
 
   # GET /metadata
