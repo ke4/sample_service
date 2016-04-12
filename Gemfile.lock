@@ -73,6 +73,7 @@ GEM
     mime-types-data (3.2016.0221)
     mini_portile2 (2.0.0)
     minitest (5.8.4)
+    mysql2 (0.4.3)
     nio4r (1.2.1)
     nokogiri (1.6.7.2)
       mini_portile2 (~> 2.0.0.rc2)
@@ -128,7 +129,7 @@ GEM
       rspec-mocks (= 3.5.0.beta3)
       rspec-support (= 3.5.0.beta3)
     rspec-support (3.5.0.beta3)
-    spring (1.7.0)
+    spring (1.7.1)
     spring-watcher-listen (2.0.0)
       listen (>= 2.7, < 4.0)
       spring (~> 1.2)
@@ -159,6 +160,7 @@ DEPENDENCIES
   byebug
   factory_girl_rails
   listen (~> 3.0.5)
+  mysql2
   puma
   rails (>= 5.0.0.beta3, < 5.1)
   rspec-rails (~> 3.5.0.beta3)
