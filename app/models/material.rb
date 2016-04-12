@@ -8,7 +8,7 @@ class Material < ApplicationRecord
 
   validates   :name, presence: true
 
-  after_initialize :generate_uuid
+  after_initialize :generate_uuid, if: :new_record?
 
   private
 
