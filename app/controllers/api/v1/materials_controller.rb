@@ -5,12 +5,12 @@ class Api::V1::MaterialsController < Api::V1::ApplicationController
   def index
     @materials = Material.all
 
-    render json: @materials, include: [:material_type]
+    render json: @materials, include: [:material_type, :metadata]
   end
 
   # GET /materials/1
   def show
-    render json: @material, include: [:material_type]
+    render json: @material, include: [:material_type, :metadata]
   end
 
   # POST /materials
