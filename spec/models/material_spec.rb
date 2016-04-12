@@ -15,12 +15,8 @@ RSpec.describe Material, type: :model do
     expect(build(:material, name: '')).to_not be_valid
   end
 
-  it "should be invalid without a UUID" do
-    expect(build(:material, uuid: nil)).to_not be_valid
-  end
-
-  it "should be invalid with an invalid UUID" do
-    expect(build(:material, uuid: '123')).to_not be_valid
+  it "should have a valid UUID value" do
+    expect(Material.new.uuid).to match(/^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i)
   end
 
   it "should be invalid without a material type" do
