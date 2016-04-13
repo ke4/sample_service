@@ -100,4 +100,188 @@ describe Api::V1::MaterialsController, type: :request do
     end
   end
 
+  describe "POST #create" do
+    it "should create a material instance" do
+      material = build(:material, material_type: create(:material_type))
+
+      material_json = {
+        data: {
+          attributes: {
+            name: material.name
+          },
+          relationships: {
+            material_type: {
+              data: {
+                attributes: {
+                  name: material.material_type.name
+                }
+              }
+            }
+          }
+        }
+      }.to_json
+      headers = {
+        'Content-Type' => 'application/json'
+      }
+
+      expect { post api_v1_materials_path, params: material_json, headers: headers }.to  change { Material.count }.by(1)
+                                                                                    .and change { MaterialType.count }.by(0)
+                                                                                    .and change { Metadatum.count }.by(0)
+
+      new_material = Material.last
+      expect(new_material.name).to eq(material.name)
+      expect(new_material.material_type).to eq(material.material_type)
+      expect(new_material.uuid.length).to eq(36)
+      expect(new_material.metadata).to be_empty
+    end
+
+    it 'should return the created instance' do
+      material = build(:material, material_type: create(:material_type))
+
+      material_json = {
+        data: {
+          attributes: {
+            name: material.name
+          },
+          relationships: {
+            material_type: {
+              data: {
+                attributes: {
+                  name: material.material_type.name
+                }
+              }
+            }
+          }
+        }
+      }.to_json
+      headers = {
+        'Content-Type' => 'application/json'
+      }
+
+      post api_v1_materials_path, params: material_json, headers: headers
+      expect(response).to be_created
+      response_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response_json[:data][:id]).to eq(Material.last.id.to_s)
+      expect(response_json[:data][:type]).to eq('materials')
+      expect(response_json[:data][:attributes][:name]).to eq(material.name)
+      expect(response_json[:data][:attributes][:uuid]).to eq(Material.last.uuid)
+      expect(response_json[:data][:relationships][:"material-type"][:data][:id]).to eq(material.material_type.id.to_s)
+
+      expect(response_json[:included].find{ |obj| obj[:type] == 'material-types' }[:id]).to eq(material.material_type.id.to_s)
+      expect(response_json[:included].find{ |obj| obj[:type] == 'material-types' }[:attributes][:name]).to eq(material.material_type.name)
+    end
+
+    it "should create a material instance with metadata" do
+      material = build(:material_with_metadata, material_type: create(:material_type))
+
+      material_json = {
+        data: {
+          attributes: {
+            name: material.name
+          },
+          relationships: {
+            material_type: {
+              data: {
+                attributes: {
+                  name: material.material_type.name
+                }
+              }
+            },
+            metadata: {
+              data: material.metadata.map { |metadatum| { attributes: { key: metadatum.key, value: metadatum.value } } }
+            }
+          }
+        }
+      }.to_json
+      headers = {
+        'Content-Type' => 'application/json'
+      }
+
+      expect { post api_v1_materials_path, params: material_json, headers: headers }.to  change { Material.count }.by(1)
+                                                                                    .and change { MaterialType.count }.by(0)
+                                                                                    .and change { Metadatum.count }.by(3)
+      expect(response).to be_created
+
+      new_material = Material.last
+      expect(new_material.metadata.size).to eq(material.metadata.size)
+      new_material.metadata.zip(material.metadata).each do |new_metadata, metadata|
+        expect(new_metadata.key).to eq(metadata.key)
+        expect(new_metadata.value).to eq(metadata.value)
+      end
+    end
+
+    it 'should return the created instance' do
+      material = build(:material_with_metadata, material_type: create(:material_type))
+
+      material_json = {
+        data: {
+          attributes: {
+            name: material.name
+          },
+          relationships: {
+            material_type: {
+              data: {
+                attributes: {
+                  name: material.material_type.name
+                }
+              }
+            },
+            metadata: {
+              data: material.metadata.map { |metadatum| { attributes: { key: metadatum.key, value: metadatum.value } } }
+            }
+          }
+        }
+      }.to_json
+      headers = {
+        'Content-Type' => 'application/json'
+      }
+
+      post api_v1_materials_path, params: material_json, headers: headers
+      expect(response).to be_created
+      response_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response_json[:data][:relationships][:metadata][:data].size).to eq(material.metadata.size)
+
+      expect(response_json[:included].select{ |obj| obj[:type] == 'metadata' }.size).to eq(material.metadata.size)
+      response_json[:included].select{ |obj| obj[:type] == 'metadata' }.zip(material.metadata).each do |included_metadata, metadata|
+        expect(included_metadata[:attributes][:key]).to eq(metadata.key)
+        expect(included_metadata[:attributes][:value]).to eq(metadata.value)
+      end
+    end
+
+    it "should fail if the material type does not exists" do
+      material = build(:material)
+
+      material_json = {
+        data: {
+          attributes: {
+            name: material.name
+          },
+          relationships: {
+            material_type: {
+              data: {
+                attributes: {
+                  name: "fake material"
+                }
+              }
+            }
+          }
+        }
+      }.to_json
+      headers = {
+        'Content-Type' => 'application/json'
+      }
+
+      expect { post api_v1_materials_path, params: material_json, headers: headers }.to  change { Material.count }.by(0)
+                                                                                    .and change { MaterialType.count }.by(0)
+                                                                                    .and change { Metadatum.count }.by(0)
+      expect(response).to be_unprocessable
+      response_json = JSON.parse(response.body, symbolize_names: true)
+       
+      expect(response_json).to include(:material_type)
+      expect(response_json[:material_type]).to include('must exist')
+    end
+  end
+
 end
