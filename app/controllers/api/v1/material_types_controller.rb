@@ -1,4 +1,4 @@
-class MaterialTypesController < ApplicationController
+class Api::V1::MaterialTypesController < Api::V1::ApplicationController
   before_action :set_material_type, only: [:show, :update, :destroy]
 
   # GET /material_types
@@ -31,11 +31,6 @@ class MaterialTypesController < ApplicationController
     else
       render json: @material_type.errors, status: :unprocessable_entity
     end
-  end
-
-  # DELETE /material_types/1
-  def destroy
-    @material_type.destroy
   end
 
   private
