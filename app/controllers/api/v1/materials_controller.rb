@@ -5,12 +5,12 @@ class Api::V1::MaterialsController < Api::V1::ApplicationController
   def index
     @materials = Material.all
 
-    render json: @materials
+    render json: @materials, include: [:material_type, :metadata]
   end
 
   # GET /materials/1
   def show
-    render json: @material
+    render json: @material, include: [:material_type, :metadata]
   end
 
   # POST /materials
@@ -31,11 +31,6 @@ class Api::V1::MaterialsController < Api::V1::ApplicationController
     else
       render json: @material.errors, status: :unprocessable_entity
     end
-  end
-
-  # DELETE /materials/1
-  def destroy
-    @material.destroy
   end
 
   private
