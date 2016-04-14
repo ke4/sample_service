@@ -15,10 +15,13 @@ class Api::V1::MaterialsController < Api::V1::ApplicationController
 
   # POST /materials
   def create
-    @material = Material.new(material_params)
+
+    material_type = MaterialType.find_by(material_type_params)
+    metadata = metadata_params[:metadata].nil? ? [] : metadata_params[:metadata][:data].map { |metadatum| Metadatum.new(metadatum[:attributes]) }
+    @material = Material.new(material_params.merge(material_type: material_type, metadata: metadata))
 
     if @material.save
-      render json: @material, status: :created, location: @material
+      render json: @material, status: :created, include: [:material_type, :metadata]
     else
       render json: @material.errors, status: :unprocessable_entity
     end
@@ -34,13 +37,22 @@ class Api::V1::MaterialsController < Api::V1::ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_material
-      @material = Material.find(params[:id])
-    end
 
-    # Only allow a trusted parameter "white list" through.
-    def material_params
-      params.require(:material).permit(:uuid, :name)
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_material
+    @material = Material.find(params[:id])
+  end
+
+  # Only allow a trusted parameter "white list" through.
+  def material_params
+    params.require(:data).require(:attributes).permit(:name, :uuid)
+  end
+
+  def material_type_params
+    params.require(:data).require(:relationships).require(:material_type).require(:data).require(:attributes).permit(:name)
+  end
+
+  def metadata_params
+    params.require(:data).require(:relationships).permit(metadata: { data: [ attributes: [:key, :value] ] })
+  end
 end
