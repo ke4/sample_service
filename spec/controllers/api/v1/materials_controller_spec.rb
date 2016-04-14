@@ -101,10 +101,19 @@ describe Api::V1::MaterialsController, type: :request do
   end
 
   describe "POST #create" do
+
+    let(:post_json) {
+      headers = {
+        'Content-Type' => 'application/json'
+      }
+
+      post api_v1_materials_path, params: @material_json.to_json, headers: headers
+    }
+
     it "should create a material instance" do
       material = build(:material, material_type: create(:material_type))
 
-      material_json = {
+      @material_json = {
         data: {
           attributes: {
             name: material.name
@@ -119,14 +128,11 @@ describe Api::V1::MaterialsController, type: :request do
             }
           }
         }
-      }.to_json
-      headers = {
-        'Content-Type' => 'application/json'
       }
 
-      expect { post api_v1_materials_path, params: material_json, headers: headers }.to  change { Material.count }.by(1)
-                                                                                    .and change { MaterialType.count }.by(0)
-                                                                                    .and change { Metadatum.count }.by(0)
+      expect { post_json }.to  change { Material.count }.by(1)
+                          .and change { MaterialType.count }.by(0)
+                          .and change { Metadatum.count }.by(0)
 
       new_material = Material.last
       expect(new_material.name).to eq(material.name)
@@ -135,10 +141,68 @@ describe Api::V1::MaterialsController, type: :request do
       expect(new_material.metadata).to be_empty
     end
 
+    it "should create a material instance when a UUID is provided" do
+      material = build(:material, material_type: create(:material_type))
+
+      @material_json = {
+        data: {
+          attributes: {
+            name: material.name,
+            uuid: material.uuid
+          },
+          relationships: {
+            material_type: {
+              data: {
+                attributes: {
+                  name: material.material_type.name
+                }
+              }
+            }
+          }
+        }
+      }
+
+      expect { post_json }.to  change { Material.count }.by(1)
+                          .and change { MaterialType.count }.by(0)
+                          .and change { Metadatum.count }.by(0)
+
+      new_material = Material.last
+      expect(new_material.uuid).to eq(material.uuid)
+    end
+
+    it 'should return an error if posting an invalid uuid' do
+      material = build(:material, material_type: create(:material_type))
+
+      @material_json = {
+        data: {
+          attributes: {
+            name: material.name,
+            uuid: '123456789'
+          },
+          relationships: {
+            material_type: {
+              data: {
+                attributes: {
+                  name: material.material_type.name
+                }
+              }
+            }
+          }
+        }
+      }
+
+      post_json
+      expect(response).to be_unprocessable
+      response_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response_json).to include(:uuid)
+      expect(response_json[:uuid]).to include('is not a valid UUID')
+    end
+
     it 'should return the created instance' do
       material = build(:material, material_type: create(:material_type))
 
-      material_json = {
+      @material_json = {
         data: {
           attributes: {
             name: material.name
@@ -153,12 +217,9 @@ describe Api::V1::MaterialsController, type: :request do
             }
           }
         }
-      }.to_json
-      headers = {
-        'Content-Type' => 'application/json'
       }
 
-      post api_v1_materials_path, params: material_json, headers: headers
+      post_json
       expect(response).to be_created
       response_json = JSON.parse(response.body, symbolize_names: true)
 
@@ -175,7 +236,7 @@ describe Api::V1::MaterialsController, type: :request do
     it "should create a material instance with metadata" do
       material = build(:material_with_metadata, material_type: create(:material_type))
 
-      material_json = {
+      @material_json = {
         data: {
           attributes: {
             name: material.name
@@ -193,14 +254,11 @@ describe Api::V1::MaterialsController, type: :request do
             }
           }
         }
-      }.to_json
-      headers = {
-        'Content-Type' => 'application/json'
       }
 
-      expect { post api_v1_materials_path, params: material_json, headers: headers }.to  change { Material.count }.by(1)
-                                                                                    .and change { MaterialType.count }.by(0)
-                                                                                    .and change { Metadatum.count }.by(3)
+      expect { post_json }.to  change { Material.count }.by(1)
+                          .and change { MaterialType.count }.by(0)
+                          .and change { Metadatum.count }.by(3)
       expect(response).to be_created
 
       new_material = Material.last
@@ -214,7 +272,7 @@ describe Api::V1::MaterialsController, type: :request do
     it 'should return the created instance' do
       material = build(:material_with_metadata, material_type: create(:material_type))
 
-      material_json = {
+      @material_json = {
         data: {
           attributes: {
             name: material.name
@@ -232,12 +290,9 @@ describe Api::V1::MaterialsController, type: :request do
             }
           }
         }
-      }.to_json
-      headers = {
-        'Content-Type' => 'application/json'
       }
 
-      post api_v1_materials_path, params: material_json, headers: headers
+      post_json
       expect(response).to be_created
       response_json = JSON.parse(response.body, symbolize_names: true)
 
@@ -253,7 +308,7 @@ describe Api::V1::MaterialsController, type: :request do
     it "should fail if the material type does not exists" do
       material = build(:material)
 
-      material_json = {
+      @material_json = {
         data: {
           attributes: {
             name: material.name
@@ -268,14 +323,11 @@ describe Api::V1::MaterialsController, type: :request do
             }
           }
         }
-      }.to_json
-      headers = {
-        'Content-Type' => 'application/json'
       }
 
-      expect { post api_v1_materials_path, params: material_json, headers: headers }.to  change { Material.count }.by(0)
-                                                                                    .and change { MaterialType.count }.by(0)
-                                                                                    .and change { Metadatum.count }.by(0)
+      expect { post_json }.to  change { Material.count }.by(0)
+                          .and change { MaterialType.count }.by(0)
+                          .and change { Metadatum.count }.by(0)
       expect(response).to be_unprocessable
       response_json = JSON.parse(response.body, symbolize_names: true)
        

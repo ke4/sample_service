@@ -45,7 +45,7 @@ class Api::V1::MaterialsController < Api::V1::ApplicationController
 
   # Only allow a trusted parameter "white list" through.
   def material_params
-    params.require(:data).require(:attributes).permit(:name)
+    params.require(:data).require(:attributes).permit(:name, :uuid)
   end
 
   def material_type_params
