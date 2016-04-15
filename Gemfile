@@ -29,11 +29,14 @@ gem 'active_model_serializers', '~> 0.10.0.rc4'
 #gem 'activeuuid'
 gem 'uuid'
 
+group :test do
+  gem 'rspec-rails', '~> 3.5.0.beta3'
+  gem 'factory_girl_rails'
+end
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug'
-  gem 'rspec-rails', '~> 3.5.0.beta3'
-  gem 'factory_girl_rails'
 end
 
 group :development do
