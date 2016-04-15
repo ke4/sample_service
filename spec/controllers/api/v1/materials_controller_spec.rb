@@ -110,6 +110,14 @@ describe Api::V1::MaterialsController, type: :request do
       post api_v1_materials_path, params: @material_json.to_json, headers: headers
     }
 
+    let(:check_reponse_is_same) {
+      expect(response).to be_created
+      post_response = response
+      get api_v1_material_path(Material.last)
+      get_response = response
+      expect(post_response.body).to eq(get_response.body)
+    }
+
     it "should create a material instance" do
       material = build(:material, material_type: create(:material_type))
 
@@ -139,6 +147,8 @@ describe Api::V1::MaterialsController, type: :request do
       expect(new_material.material_type).to eq(material.material_type)
       expect(new_material.uuid.length).to eq(36)
       expect(new_material.metadata).to be_empty
+
+      check_reponse_is_same
     end
 
     it "should create a material instance when a UUID is provided" do
@@ -168,6 +178,8 @@ describe Api::V1::MaterialsController, type: :request do
 
       new_material = Material.last
       expect(new_material.uuid).to eq(material.uuid)
+
+      check_reponse_is_same
     end
 
     it 'should return an error if posting an invalid uuid' do
@@ -336,7 +348,7 @@ describe Api::V1::MaterialsController, type: :request do
     end
   end
 
-  describe "PUT #index" do
+  describe "PUT #update" do
     let(:update_material) {
       headers = {
         'Content-Type' => 'application/json'
@@ -602,6 +614,43 @@ describe Api::V1::MaterialsController, type: :request do
 
       expect(response_json[:data][:relationships][:metadata][:data].size).to eq(@material.metadata.size)
       expect(Material.find(@material.id).metadata).to eq(@material.metadata)
+    end
+
+    it 'should not alter the database if the request is unsuccessful' do 
+      @material = create(:material_with_metadata)
+      new_metadatum = build(:metadatum)
+ 
+      @material_json = {
+        data: {
+          attributes: {
+            name: "new name",
+            uuid: '123456'
+          },
+          relationships: {
+            material_type: {
+              data: {
+                attributes: {
+                  name: @material.material_type.name
+                }
+              }
+            },
+            metadata: {
+              data: (@material.metadata + [new_metadatum]).map { |metadatum| { attributes: { key: metadatum.key, value: metadatum.value + "_changed" } } }
+            }
+          }
+        }
+      }
+    
+      expect { update_material }.to  change { Material.count }.by(0)
+                                .and change { MaterialType.count }.by(0)
+                                .and change { Metadatum.count }.by(0)
+      expect(response).to be_unprocessable
+
+      new_material = Material.find(@material.id)
+      expect(new_material.name).to eq(@material.name)
+      expect(new_material.uuid).to eq(@material.uuid)
+
+      expect(new_material.metadata.first.value).to eq(@material.metadata.first.value)
     end
   end
 end
