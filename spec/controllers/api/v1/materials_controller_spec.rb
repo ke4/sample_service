@@ -336,4 +336,272 @@ describe Api::V1::MaterialsController, type: :request do
     end
   end
 
+  describe "PUT #index" do
+    let(:update_material) {
+      headers = {
+        'Content-Type' => 'application/json'
+      }
+
+      put api_v1_material_path(@material), params: @material_json.to_json, headers: headers
+    }
+
+    it 'should update the attributes' do
+      @material = create(:material)
+      new_name = 'new name'
+      new_uuid = UUID.new.generate
+
+      @material_json = {
+        data: {
+          attributes: {
+            name: new_name,
+            uuid: new_uuid
+          }
+        }
+      }
+
+      expect { update_material }.to change {Material.count }.by(0)
+                                .and change { MaterialType.count }.by(0)
+                                .and change { Metadatum.count }.by(0)
+
+      response_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response).to be_success
+
+      expect(response_json[:data][:attributes][:name]).to eq(new_name)
+      expect(response_json[:data][:attributes][:uuid]).to eq(new_uuid)
+
+      @material.reload
+
+      expect(@material.name).to eq(new_name)
+      expect(@material.uuid).to eq(new_uuid)
+    end
+
+    it 'should keep the old attributes if none are provided' do
+      @material = create(:material)
+      old_name = @material.name
+      new_uuid = UUID.new.generate
+
+      @material_json = {
+        data: {
+          attributes: {
+            uuid: new_uuid
+          }
+        }
+      }
+
+      expect { update_material }.to change {Material.count }.by(0)
+                                .and change { MaterialType.count }.by(0)
+                                .and change { Metadatum.count }.by(0)
+
+      response_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response).to be_success
+
+      expect(response_json[:data][:attributes][:name]).to eq(old_name)
+      expect(response_json[:data][:attributes][:uuid]).to eq(new_uuid)
+
+      @material.reload
+
+      expect(@material.name).to eq(old_name)
+      expect(@material.uuid).to eq(new_uuid)
+    end
+
+    it 'should update the material_type' do
+      @material = create(:material)
+      new_material_type = create(:material_type)
+      new_name = 'new name'
+      new_uuid = UUID.new.generate
+
+      @material_json = {
+        data: {
+          attributes: {
+            name: new_name,
+            uuid: new_uuid
+          },
+          relationships: {
+            material_type: {
+              data: {
+                attributes: {
+                  name: new_material_type.name
+                }
+              }
+            }
+          }
+        }
+      }
+
+      expect { update_material }.to change {Material.count }.by(0)
+                                .and change { MaterialType.count }.by(0)
+                                .and change { Metadatum.count }.by(0)
+
+      response_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response).to be_success
+
+      expect(response_json[:data][:attributes][:name]).to eq(new_name)
+      expect(response_json[:data][:attributes][:uuid]).to eq(new_uuid)
+      expect(response_json[:data][:relationships][:"material-type"][:data][:id]).to eq(new_material_type.id.to_s)
+
+      @material.reload
+
+      expect(@material.name).to eq(new_name)
+      expect(@material.uuid).to eq(new_uuid)
+      expect(@material.material_type).to eq(new_material_type)
+    end
+
+    it 'should update the material_type without updating attributes' do
+      @material = create(:material)
+      original_name = @material.name
+      original_uuid = @material.uuid
+
+      new_material_type = create(:material_type)
+
+      @material_json = {
+        data: {
+          relationships: {
+            material_type: {
+              data: {
+                attributes: {
+                  name: new_material_type.name
+                }
+              }
+            }
+          }
+        }
+      }
+
+      expect { update_material }.to change {Material.count }.by(0)
+                                .and change { MaterialType.count }.by(0)
+                                .and change { Metadatum.count }.by(0)
+
+      response_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response).to be_success
+
+      expect(response_json[:data][:attributes][:name]).to eq(original_name)
+      expect(response_json[:data][:attributes][:uuid]).to eq(original_uuid)
+      expect(response_json[:data][:relationships][:"material-type"][:data][:id]).to eq(new_material_type.id.to_s)
+
+      @material.reload
+
+      expect(@material.name).to eq(original_name)
+      expect(@material.uuid).to eq(original_uuid)
+      expect(@material.material_type).to eq(new_material_type)
+    end
+
+    it 'should update the existing metadata' do
+      @material = create(:material_with_metadata)
+
+      @material_json = {
+        data: {
+          attributes: {
+            name: @material.name
+          },
+          relationships: {
+            material_type: {
+              data: {
+                attributes: {
+                  name: @material.material_type.name
+                }
+              }
+            },
+            metadata: {
+              data: @material.metadata.map { |metadatum| { attributes: { key: metadatum.key, value: metadatum.value + "_changed" } } }
+            }
+          }
+        }
+      }
+
+      expect { update_material }.to change {Material.count }.by(0)
+                                .and change { MaterialType.count }.by(0)
+                                .and change { Metadatum.count }.by(0)
+
+      expect(response).to be_success
+      response_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response_json[:data][:relationships][:metadata][:data].size).to eq(@material.metadata.size)
+      response_json[:data][:relationships][:metadata][:data].zip(@material.metadata) do |new_metadata, old_metadata|
+        expect(new_metadata[:id]).to eq(old_metadata.id.to_s)
+      end
+      expect(response_json[:included].select{ |obj| obj[:type] == "metadata" }.size).to eq(@material.metadata.size)
+      @material.metadata.each do |metadatum|
+        metadatum_json = response_json[:included].find{ |obj| obj[:type] == "metadata" and obj[:id] == metadatum.id.to_s }
+        expect(metadatum_json[:attributes][:key]).to eq(metadatum.key)
+        expect(metadatum_json[:attributes][:value]).to eq(metadatum.value + '_changed')
+      end
+
+      new_material = Material.find(@material.id)
+      new_material.metadata.zip(@material.metadata).each do |new_metadata, old_metadata|
+        expect(new_metadata.id).to eq(old_metadata.id)
+        expect(new_metadata.key).to eq(old_metadata.key)
+        expect(new_metadata.value).to eq(old_metadata.value + '_changed')
+      end
+    end
+
+    it 'should add additional metadata' do
+      @material = create(:material_with_metadata)
+      new_metadatum = build(:metadatum)
+
+      @material_json = {
+        data: {
+          relationships: {
+            metadata: {
+              data: (@material.metadata + [new_metadatum]).map { |metadatum| { attributes: { key: metadatum.key, value: metadatum.value } } }
+            }
+          }
+        }
+      }
+
+      expect { update_material }.to change {Material.count }.by(0)
+                                .and change { MaterialType.count }.by(0)
+                                .and change { Metadatum.count }.by(1)
+      expect(response).to be_success
+      response_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response_json[:data][:relationships][:metadata][:data].size).to eq(@material.metadata.size + 1)
+      response_json[:data][:relationships][:metadata][:data][0...@material.metadata.size].zip(@material.metadata) do |new_metadata, old_metadata|
+        expect(new_metadata[:id]).to eq(old_metadata.id.to_s)
+      end
+
+      expect(response_json[:included].select{ |obj| obj[:type] == "metadata" }.size).to eq(@material.metadata.size + 1)
+      (@material.metadata).each do |metadatum|
+        metadatum_json = response_json[:included].find{ |obj| obj[:type] == "metadata" and obj[:id] == metadatum.id.to_s }
+        expect(metadatum_json[:attributes][:key]).to eq(metadatum.key)
+        expect(metadatum_json[:attributes][:value]).to eq(metadatum.value)
+      end
+      new_metadatum_json = response_json[:included].last
+      expect(new_metadatum_json[:attributes][:key]).to eq(new_metadatum.key)
+      expect(new_metadatum_json[:attributes][:value]).to eq(new_metadatum.value)
+
+      new_material = Material.find(@material.id)
+      new_material.metadata[0...@material.metadata.size].zip(@material.metadata).each do |new_metadata, old_metadata|
+        expect(new_metadata.id).to eq(old_metadata.id)
+        expect(new_metadata.key).to eq(old_metadata.key)
+        expect(new_metadata.value).to eq(old_metadata.value)
+      end
+
+      expect(Metadatum.last.key).to eq(new_metadatum.key)
+      expect(Metadatum.last.value).to eq(new_metadatum.value)
+    end
+
+    it 'should keep all old metadata if none are provided' do
+      @material = create(:material_with_metadata)
+
+      @material_json = {
+        data: {
+          attributes: {},
+          relationships: {}
+        }
+      }
+
+      expect { update_material }.to change {Material.count }.by(0)
+                                .and change { MaterialType.count }.by(0)
+                                .and change { Metadatum.count }.by(0)
+      expect(response).to be_success
+      response_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response_json[:data][:relationships][:metadata][:data].size).to eq(@material.metadata.size)
+      expect(Material.find(@material.id).metadata).to eq(@material.metadata)
+    end
+  end
 end
