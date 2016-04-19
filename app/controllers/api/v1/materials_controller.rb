@@ -1,5 +1,5 @@
 class Api::V1::MaterialsController < Api::V1::ApplicationController
-  before_action :set_material, only: [:show, :update, :destroy]
+  before_action :set_material, only: [:show, :update]
 
   # GET /materials
   def index
@@ -27,17 +27,16 @@ class Api::V1::MaterialsController < Api::V1::ApplicationController
 
   # PATCH/PUT /materials/1
   def update
+    ActiveRecord::Base.transaction do
+      @material = Api::V1::Helpers::MaterialParser.new(params: material_params, material: @material).update
 
-    begin
-      ActiveRecord::Base.transaction do
-        @material = Api::V1::Helpers::MaterialParser.new(params: material_params, material: @material).update
-
+      if @material.errors.empty?
         render json: @material, include: [:material_type, :metadata]
+      else
+        render json: @material.errors, status: :unprocessable_entity
+        raise ActiveRecord::Rollback
       end
-    rescue
-      render json: @material.errors, status: :unprocessable_entity
     end
-
   end
 
   private

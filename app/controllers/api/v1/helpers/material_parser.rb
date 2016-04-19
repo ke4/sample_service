@@ -7,7 +7,7 @@ class Api::V1::Helpers::MaterialParser
   def build
     material_type = MaterialType.find_by(material_type_create_params)
     metadata = metadata_create_params[:metadata].nil? ? [] : metadata_create_params[:metadata][:data].map { |metadatum| Metadatum.new(metadatum[:attributes]) }
-    
+
     Material.new(material_create_params.merge(material_type: material_type, metadata: metadata))
   end
 
@@ -19,7 +19,7 @@ class Api::V1::Helpers::MaterialParser
 
     if metadata_update_params[:relationships] and metadata_update_params[:relationships][:metadata]
       metadata_update_params[:relationships][:metadata][:data].each do |new_metadatum|
-        metadatum = @material.metadata.find{ |metadatum| metadatum.key == new_metadatum[:attributes][:key] }
+        metadatum = @material.metadata.find { |metadatum| metadatum.key == new_metadatum[:attributes][:key] }
         if metadatum.nil?
           @material.metadata << Metadatum.new(new_metadatum[:attributes])
         else
@@ -28,8 +28,8 @@ class Api::V1::Helpers::MaterialParser
       end
     end
 
-    @material.update!((material_update_params[:attributes] or {}).merge(material_type: material_type))
-    @material.metadata.each { |metadatum| metadatum.save! }
+    @material.update((material_update_params[:attributes] or {}).merge(material_type: material_type))
+    @material.metadata.each { |metadatum| metadatum.save }
 
     @material
   end
@@ -45,7 +45,7 @@ class Api::V1::Helpers::MaterialParser
   end
 
   def metadata_create_params
-    @params.require(:relationships).permit(metadata: { data: [ attributes: [:key, :value] ] })
+    @params.require(:relationships).permit(metadata: {data: [attributes: [:key, :value]]})
   end
 
   def material_update_params
@@ -53,10 +53,10 @@ class Api::V1::Helpers::MaterialParser
   end
 
   def material_type_update_params
-    @params.permit(relationships: { material_type: { data: { attributes: [:name ] }}})
+    @params.permit(relationships: {material_type: {data: {attributes: [:name]}}})
   end
 
   def metadata_update_params
-    @params.permit(relationships: { metadata: { data: [ attributes: [:key, :value] ] } })
+    @params.permit(relationships: {metadata: {data: [attributes: [:key, :value]]}})
   end
 end

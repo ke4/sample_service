@@ -1,5 +1,5 @@
 class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
-  before_action :set_material_batch, only: [:show, :update, :destroy]
+  before_action :set_material_batch, only: [:show, :update]
 
   # GET /material_batches
   def index
@@ -28,62 +28,61 @@ class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
 
   # PATCH/PUT /material_batches/1
   def update
+    ActiveRecord::Base.transaction do
+      errors = {}
 
-    begin
-      ActiveRecord::Base.transaction do
-        if material_update_params[:relationships] and material_update_params[:relationships][:materials]
-          material_update_params[:relationships][:materials][:data].each { |param|
-            if param[:id]
-              material = Material.find(param[:id])
-              material = Api::V1::Helpers::MaterialParser.new(params: param, material: material).update
+      if material_update_params[:relationships] and material_update_params[:relationships][:materials]
+        material_update_params[:relationships][:materials][:data].each { |param|
+          if param[:id]
+            material = Material.find(param[:id])
+            material = Api::V1::Helpers::MaterialParser.new(params: param, material: material).update
 
-              unless @material_batch.materials.include? material
-                @material_batch.materials << material
-              end
-            else
-              @material_batch.materials << Api::V1::Helpers::MaterialParser.new(params: param).build
+            unless @material_batch.materials.include? material
+              @material_batch.materials << material
             end
-
-          }
-        end
-
-        if material_batch_update_params[:attributes]
-          @material_batch.update!(material_batch_update_params[:attributes])
-        end
-
-        render json: @material_batch, status: :created, include: [:materials, "materials.material_type", "materials.metadata"]
+          else
+            material = Api::V1::Helpers::MaterialParser.new(params: param).build
+            @material_batch.materials << material
+          end
+          errors = errors.merge material.errors
+        }
       end
-    rescue 
-      render json: @material_batch.errors, status: :unprocessable_entity
+
+      if material_batch_update_params[:attributes]
+        unless @material_batch.update(material_batch_update_params[:attributes])
+          errors = errors.merge @material_batch.errors
+        end
+      end
+
+      if errors.empty?
+        render json: @material_batch, status: :created, include: [:materials, "materials.material_type", "materials.metadata"]
+      else
+        render json: errors, status: :unprocessable_entity
+        raise ActiveRecord::Rollback
+      end
     end
-
-  end
-
-  # DELETE /material_batches/1
-  def destroy
-    @material_batch.destroy
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_material_batch
-      @material_batch = MaterialBatch.find(params[:id])
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_material_batch
+    @material_batch = MaterialBatch.find(params[:id])
+  end
 
-    # Only allow a trusted parameter "white list" through.
-    def material_batch_create_params
-      params.require(:data).require(:attributes).permit(:name)
-    end
+  # Only allow a trusted parameter "white list" through.
+  def material_batch_create_params
+    params.require(:data).require(:attributes).permit(:name)
+  end
 
-    def material_create_params
-      params.require(:data).require(:relationships).require(:materials).require(:data)
-    end
+  def material_create_params
+    params.require(:data).require(:relationships).require(:materials).require(:data)
+  end
 
-    def material_batch_update_params
-      params.require(:data).permit(attributes: [:name])
-    end
+  def material_batch_update_params
+    params.require(:data).permit(attributes: [:name])
+  end
 
-    def material_update_params
-      params.require(:data).permit!
-    end
+  def material_update_params
+    params.require(:data).permit!
+  end
 end

@@ -1,7 +1,6 @@
 # See README.md for copyright details
 require 'uuid'
 
-
 class Material < ApplicationRecord
   belongs_to              :material_type
   has_and_belongs_to_many :material_batch

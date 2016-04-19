@@ -645,12 +645,16 @@ describe Api::V1::MaterialsController, type: :request do
                                 .and change { MaterialType.count }.by(0)
                                 .and change { Metadatum.count }.by(0)
       expect(response).to be_unprocessable
+      response_json = JSON.parse(response.body, symbolize_names: true)
 
       new_material = Material.find(@material.id)
       expect(new_material.name).to eq(@material.name)
       expect(new_material.uuid).to eq(@material.uuid)
 
       expect(new_material.metadata.first.value).to eq(@material.metadata.first.value)
+
+      expect(response_json).to include(:uuid)
+      expect(response_json[:uuid]).to include('is not a valid UUID')
     end
   end
 end
