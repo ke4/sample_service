@@ -1,0 +1,473 @@
+FORMAT: 1A
+
+# sample-service-api
+
+RESTful JSON API-blueprint for registering and modifying all types of material (sample, library etc...). It can create, read and update a material and add additional metadata to it.
+
+## Material Type Collection [/material_types]
+
+### List All Material Types [GET]
+
+This action response with a list of all material types.
+
++ Response 200 (application/json)
+
+        {
+            "data": [
+                {
+                    "attributes": {
+                        "name": "sample"
+                    },
+                    "id": "1",
+                    "links": {
+                        "self": "/api/v1/material_types/1"
+                    },
+                    "type": "material-types"
+                },
+                {
+                    "attributes": {
+                        "name": "library"
+                    },
+                    "id": "2",
+                    "links": {
+                        "self": "/api/v1/material_types/2"
+                    },
+                    "type": "material-types"
+                }
+            ]
+        }
+
+## Material Type [/material_types/{id}]
+        
+### Get a Material Type [GET]
+
+This action response with the queried material type data.
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "attributes": {
+                    "name": "sample"
+                },
+                "id": "1",
+                "links": {
+                    "self": "/api/v1/material_types/1"
+                },
+                "type": "material-types"
+            }
+        }
+
+### Create a new Material Type [POST]
+
+**THIS FEATURE IS NOT YET IMPLEMENTED!**
+
+You can create a new Material Type using this action. It takes a JSON-API compatible
+object containing data of the new Material Type.
+
+
++ Request (application/vnd.api+json)
+
+        {
+            "data": {
+                "type": "material_types",
+                "attributes": {
+                    "name": "new material type"
+                }
+            }
+        }
+
++ Response 201 (application/vnd.api+json)
+
+    + Headers
+
+            Location: /material_types/3
+
+    + Body
+
+            {
+                "data": {
+                    "attributes": {
+                        "name": "new material type"
+                    },
+                    "id": "3",
+                    "links": {
+                        "self": "/api/v1/material_types/3"
+                    },
+                    "type": "material-types"
+                }
+            }
+
+## Material Collection [/materials]
+
+### List All Materials [GET]
+
+This action response with a list of all materials.
+
++ Response 200 (application/json)
+
+        {
+            "data": [
+                {
+                    "attributes": {
+                        "name": "sample abc",
+                        "uuid": "8b8959b0-e852-0133-db51-005056bf12f5"
+                    },
+                    "id": "1",
+                    "relationships": {
+                        "material-type": {
+                            "data": {
+                                "id": "1",
+                                "type": "material-types"
+                            }
+                        },
+                        "metadata": {
+                            "data": []
+                        }
+                    },
+                    "type": "materials"
+                },
+                {
+                    "attributes": {
+                        "name": "sample def",
+                        "uuid": "aec17ba0-e852-0133-db52-005056bf12f5"
+                    },
+                    "id": "2",
+                    "relationships": {
+                        "material-type": {
+                            "data": {
+                                "id": "1",
+                                "type": "material-types"
+                            }
+                        },
+                        "metadata": {
+                            "data": []
+                        }
+                    },
+                    "type": "materials"
+                }
+            ],
+            "included": [
+                {
+                    "attributes": {
+                        "name": "sample"
+                    },
+                    "id": "1",
+                    "links": {
+                        "self": "/api/v1/material_types/1"
+                    },
+                    "type": "material-types"
+                }
+            ]
+        }
+
+## Material [/materials/{id}]
+
+### Get a Material [GET]
+
+This action response with the queried material data.
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "attributes": {
+                    "name": "sample abc",
+                    "uuid": "8b8959b0-e852-0133-db51-005056bf12f5"
+                },
+                "id": "1",
+                "relationships": {
+                    "material-type": {
+                        "data": {
+                            "id": "1",
+                            "type": "material-types"
+                        }
+                    },
+                    "metadata": {
+                        "data": []
+                    }
+                },
+                "type": "materials"
+            },
+            "included": [
+                {
+                    "attributes": {
+                        "name": "sample"
+                    },
+                    "id": "1",
+                    "links": {
+                        "self": "/api/v1/material_types/1"
+                    },
+                    "type": "material-types"
+                }
+            ]
+        }
+
+## Material creation and update [/materials/{id} POST]
+
+You can create a new Material using this action. It takes a JSON-API compatible
+object containing data of the new Material. It is mandatory to has a Material Type relationship.
+It is optional to the material to has one or more metadata relationship(s).
+
+### Create a new Material without attached metadata [POST]
+
++ Request (application/vnd.api+json)
+
+        {
+            "data": {
+                "attributes": {
+                    "name": "sample def"
+                },
+                "relationships": {
+                    "material_type": {
+                        "data": {
+                            "attributes": {
+                                "name": "sample"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
++ Response 201 (application/vnd.api+json)
+
+    + Headers
+
+            Location: /materials/2
+
+    + Body
+
+            {
+                "data": {
+                    "id": "2",
+                    "type": "materials",
+                    "attributes": {
+                        "uuid": "aec17ba0-e852-0133-db52-005056bf12f5",
+                        "name": "sample def"
+                    },
+                    "relationships": {
+                        "material-type": {
+                            "data": {
+                                "id": "1",
+                                "type": "material-types"
+                            }
+                        },
+                        "metadata": {
+                            "data": []
+                        }
+                    }
+                },
+                "included": [{
+                    "id": "1",
+                    "type": "material-types",
+                    "attributes": {
+                        "name": "sample"
+                    },
+                    "links": {
+                        "self": "/api/v1/material_types/1"
+                    }
+                }]
+            }
+            
+### Create a new Material with attached metadata [POST]
+
++ Request (application/vnd.api+json)
+
+        {
+            "data": {
+                "attributes": {
+                    "name": "library 123"
+                },
+                "relationships": {
+                    "material_type": {
+                        "data": {
+                            "attributes": {
+                                "name": "library"
+                            }
+                        }
+                    },
+                    "metadata": {
+                        "data": [
+                            {
+                                "attributes": {
+                                    "key": "gender",
+                                    "value": "female"
+                                }
+                            },
+                            {
+                                "attributes": {
+                                    "key": "taxon_id",
+                                    "value": "5678"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
++ Response 201 (application/vnd.api+json)
+
+    + Headers
+
+            Location: /materials/3
+
+    + Body
+
+            {
+                "data": {
+                    "attributes": {
+                        "name": "library 123",
+                        "uuid": "922c3940-e863-0133-db53-005056bf12f5"
+                    },
+                    "id": "3",
+                    "relationships": {
+                        "material-type": {
+                            "data": {
+                                "id": "2",
+                                "type": "material-types"
+                            }
+                        },
+                        "metadata": {
+                            "data": [
+                                {
+                                    "id": "1",
+                                    "type": "metadata"
+                                },
+                                {
+                                    "id": "2",
+                                    "type": "metadata"
+                                }
+                            ]
+                        }
+                    },
+                    "type": "materials"
+                },
+                "included": [
+                    {
+                        "attributes": {
+                            "name": "library"
+                        },
+                        "id": "2",
+                        "links": {
+                            "self": "/api/v1/material_types/2"
+                        },
+                        "type": "material-types"
+                    },
+                    {
+                        "attributes": {
+                            "key": "gender",
+                            "value": "female"
+                        },
+                        "id": "1",
+                        "type": "metadata"
+                    },
+                    {
+                        "attributes": {
+                            "key": "taxon_id",
+                            "value": "5678"
+                        },
+                        "id": "2",
+                        "type": "metadata"
+                    }
+                ]
+            }
+            
+### Update an existing Material with modified name, material type and metadata [PUT]
+
++ Request (application/vnd.api+json)
+
+        {
+            "data": {
+                "attributes": {
+                    "name": "sample 123"
+                },
+                "relationships": {
+                    "material_type": {
+                        "data": {
+                            "attributes": {
+                                "name": "sample"
+                            }
+                        }
+                    },
+                    "metadata": {
+                        "data": [
+                            {
+                                "attributes": {
+                                    "key": "gender",
+                                    "value": "male"
+                                }
+                            },
+                            {
+                                "attributes": {
+                                    "key": "taxon_id",
+                                    "value": "1234"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
++ Response 201 (application/vnd.api+json)
+
+    + Headers
+
+            Location: /materials/3
+
+    + Body
+
+            {
+                "data": {
+                    "id": "3",
+                    "type": "materials",
+                    "attributes": {
+                        "uuid": "922c3940-e863-0133-db53-005056bf12f5",
+                        "name": "sample 123"
+                    },
+                    "relationships": {
+                        "material-type": {
+                            "data": {
+                                "id": "1",
+                                "type": "material-types"
+                            }
+                        },
+                        "metadata": {
+                            "data": [{
+                                "id": "1",
+                                "type": "metadata"
+                            }, {
+                                "id": "2",
+                                "type": "metadata"
+                            }]
+                        }
+                    }
+                },
+                "included": [{
+                    "id": "1",
+                    "type": "material-types",
+                    "attributes": {
+                        "name": "sample"
+                    },
+                    "links": {
+                        "self": "/api/v1/material_types/1"
+                    }
+                }, {
+                    "id": "1",
+                    "type": "metadata",
+                    "attributes": {
+                        "key": "gender",
+                        "value": "male"
+                    }
+                }, {
+                    "id": "2",
+                    "type": "metadata",
+                    "attributes": {
+                        "key": "taxon_id",
+                        "value": "1234"
+                    }
+                }]
+            
+            }
