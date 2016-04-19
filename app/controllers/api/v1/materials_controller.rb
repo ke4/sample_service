@@ -16,7 +16,7 @@ class Api::V1::MaterialsController < Api::V1::ApplicationController
   # POST /materials
   def create
 
-    @material = Api::V1::Helpers::MaterialParser.new(params: material_params).build
+    @material = Material.build_from_params(material_params)
 
     if @material.save
       render json: @material, status: :created, include: [:material_type, :metadata]
@@ -27,15 +27,10 @@ class Api::V1::MaterialsController < Api::V1::ApplicationController
 
   # PATCH/PUT /materials/1
   def update
-    ActiveRecord::Base.transaction do
-      @material = Api::V1::Helpers::MaterialParser.new(params: material_params, material: @material).update
-
-      if @material.errors.empty?
-        render json: @material, include: [:material_type, :metadata]
-      else
-        render json: @material.errors, status: :unprocessable_entity
-        raise ActiveRecord::Rollback
-      end
+    if @material.update_from_params(material_params)
+      render json: @material, include: [:material_type, :metadata]
+    else
+      render json: @material.errors, status: :unprocessable_entity
     end
   end
 

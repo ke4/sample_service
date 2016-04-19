@@ -207,7 +207,7 @@ RSpec.describe "MaterialBatches", type: :request do
 
     it "should update the material_batch when adding a new material" do
       @material_batch = create(:material_batch_with_metadata)
-      material = build(:material, material_type: create(:material_type))
+      material = build(:material_with_metadata, material_type: create(:material_type))
 
       @material_batch_json = {
           data: {
@@ -225,6 +225,14 @@ RSpec.describe "MaterialBatches", type: :request do
                                               name: material.material_type.name
                                           }
                                       }
+                                  },
+                                  metadata: {
+                                      data: material.metadata.map{ |metadatum| {
+                                          attributes: {
+                                            key: metadatum.key,
+                                            value: metadatum.value
+                                          }
+                                      }}
                                   }
                               }
                           }
@@ -237,7 +245,7 @@ RSpec.describe "MaterialBatches", type: :request do
       expect { update_material_batch }.to change { MaterialBatch.count }.by(0)
                                       .and change { Material.count }.by(1)
                                       .and change { MaterialType.count }.by(0)
-                                      .and change { Metadatum.count }.by(0)
+                                      .and change { Metadatum.count }.by(3)
                                       .and change { @material_batch.materials.count }.by(1)
       expect(response).to be_success
       response_json = JSON.parse(response.body, symbolize_names: true)
@@ -246,6 +254,11 @@ RSpec.describe "MaterialBatches", type: :request do
 
       (@material_batch.materials + [material]).zip(new_material_batch.materials).each { |old_material, persisted_material|
         expect(old_material.name).to eq(persisted_material.name)
+
+        old_material.metadata.zip(persisted_material.metadata).each { |old_metadatum, persisted_metadatum|
+          expect(old_metadatum.key).to eq(persisted_metadatum.key)
+          expect(old_metadatum.value).to eq(persisted_metadatum.value)
+        }
       }
     end
 
