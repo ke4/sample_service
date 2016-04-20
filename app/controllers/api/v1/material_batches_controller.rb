@@ -5,12 +5,12 @@ class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
   def index
     @material_batches = MaterialBatch.all
 
-    render json: @material_batches, include: [:materials, "materials.material_type", "materials.metadata"]
+    render json: @material_batches, include: includes
   end
 
   # GET /material_batches/1
   def show
-    render json: @material_batch, include: [:materials, "materials.material_type", "materials.metadata"]
+    render json: @material_batch, include: includes
   end
 
   # POST /material_batches
@@ -18,7 +18,7 @@ class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
     @material_batch = MaterialBatch.build_from_params(params)
 
     if @material_batch.save
-      render json: @material_batch, status: :created, include: [:materials, "materials.material_type", "materials.metadata"]
+      render json: @material_batch, status: :created, include: includes
     else
       render json: @material_batch.errors, status: :unprocessable_entity
     end
@@ -27,7 +27,7 @@ class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
   # PATCH/PUT /material_batches/1
   def update
     if @material_batch.update_from_params(params)
-      render json: @material_batch, include: [:materials, "materials.material_type", "materials.metadata"]
+      render json: @material_batch, include: includes
     else
       render json: @material_batch.errors, status: :unprocessable_entity
     end
@@ -37,5 +37,9 @@ class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
   # Use callbacks to share common setup or constraints between actions.
   def set_material_batch
     @material_batch = MaterialBatch.find(params[:id])
+  end
+
+  def includes
+    [:materials, "materials.material_type", "materials.metadata"]
   end
 end
