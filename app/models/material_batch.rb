@@ -2,28 +2,14 @@ class MaterialBatch < ApplicationRecord
   has_and_belongs_to_many :materials
 
   validates :materials, presence: true
+  validate :validate_each_material
 
   def self.build_from_params(params)
     material_batch = MaterialBatch.new(material_batch_create_params(params))
 
-    ActiveRecord::Base.transaction do
-      material_create_params(params).each { |param|
-        material = Material.build_from_params(param)
-        if material.errors.empty?
-          material_batch.materials << material
-        else
-          material.errors.each { |key|
-            material.errors[key].each { |error|
-              material_batch.errors.add(key, error)
-            }
-          }
-        end
-      }
-
-      unless material_batch.errors.empty?
-        raise ActiveRecord::Rollback
-      end
-    end
+    material_batch.materials = material_create_params(params).map { |param|
+      Material.build_from_params(param)
+    }
 
     material_batch
   end
@@ -49,7 +35,7 @@ class MaterialBatch < ApplicationRecord
           end
           material.errors.each { |key|
             material.errors[key].each { |error|
-              self.errors.add(key, error)
+              self.errors.add("material.#{key}", error)
             }
           }
         }
@@ -66,6 +52,16 @@ class MaterialBatch < ApplicationRecord
   end
 
   private
+
+  def validate_each_material
+    materials.each { |material|
+      material.errors.each { |key|
+        material.errors[key].each { |error|
+          errors.add("material.#{key}", error)
+        }
+      }
+    }
+  end
 
   # Only allow a trusted parameter "white list" through.
   def self.material_batch_create_params(params)

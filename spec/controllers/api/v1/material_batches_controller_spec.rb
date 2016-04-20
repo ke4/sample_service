@@ -107,6 +107,55 @@ RSpec.describe "MaterialBatches", type: :request do
       expect(new_material_batch.name).to eq(material_batch.name)
       expect(new_material_batch.materials.size).to eq(material_batch.materials.size)
     end
+
+    it 'should not save anything to the database if invalid' do
+      material_batch = build(:material_batch_with_metadata)
+      material_batch.materials.last.name = nil
+
+      @material_batch_json = {
+          data: {
+              attributes: {
+                  name: material_batch.name
+              },
+              relationships: {
+                  materials: {
+                      data: material_batch.materials.map { |material| {
+                          attributes: {
+                              name: material.name
+                          },
+                          relationships: {
+                              material_type: {
+                                  data: {
+                                      attributes: {
+                                          name: material.material_type.name
+                                      }
+                                  }
+                              },
+                              metadata: {
+                                  data: material.metadata.map { |metadatum| {
+                                      attributes: {
+                                          key: metadatum.key,
+                                          value: metadatum.value
+                                      }
+                                  } }
+                              }
+                          }
+                      } }
+                  }
+              }
+          }
+      }
+
+      expect { post_json }.to change { MaterialBatch.count }.by(0)
+                          .and change { Material.count }.by(0)
+                          .and change { MaterialType.count }.by(0)
+                          .and change { Metadatum.count }.by(0)
+      expect(response).to be_unprocessable
+      response_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response_json).to include(:'material.name')
+      expect(response_json[:'material.name']).to include('can\'t be blank')
+    end
   end
 
   describe "PUT #update" do
@@ -305,8 +354,8 @@ RSpec.describe "MaterialBatches", type: :request do
         expect(old_material.name).to eq(persisted_material.name)
       }
 
-      expect(response_json).to include(:name)
-      expect(response_json[:name]).to include('can\'t be blank')
+      expect(response_json).to include(:'material.name')
+      expect(response_json[:'material.name']).to include('can\'t be blank')
     end
 
   end

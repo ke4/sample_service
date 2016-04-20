@@ -6,8 +6,9 @@ class Material < ApplicationRecord
   has_and_belongs_to_many :material_batch
   has_many                :metadata
 
-  validates   :name, presence: true
-  validates   :uuid, uniqueness: {case_sensitive: false}, uuid: true
+  validates :name, presence: true
+  validates :uuid, uniqueness: {case_sensitive: false}, uuid: true
+  validate  :validate_each_metadatum
 
   after_initialize :generate_uuid, if: "uuid.nil?"
 
@@ -41,7 +42,7 @@ class Material < ApplicationRecord
         metadatum.save
         metadatum.errors.each { |key|
           metadatum.errors[key].each { |error|
-            self.errors.add(key, error)
+            self.errors.add("metadatum.#{key}", error)
           }
         }
       }
@@ -57,6 +58,16 @@ class Material < ApplicationRecord
   end
 
   private
+
+  def validate_each_metadatum
+    metadata.each { |metadatum|
+      metadatum.errors.each { |key|
+        metadatum.errors[key].each { |error|
+          errors.add("metadatum.#{key}", error)
+        }
+      }
+    }
+  end
 
   def generate_uuid
     self.uuid = UUID.new.generate

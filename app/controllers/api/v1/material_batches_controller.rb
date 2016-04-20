@@ -15,7 +15,7 @@ class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
 
   # POST /material_batches
   def create
-   @material_batch = MaterialBatch.build_from_params(params)
+    @material_batch = MaterialBatch.build_from_params(params)
 
     if @material_batch.save
       render json: @material_batch, status: :created, include: [:materials, "materials.material_type", "materials.metadata"]
@@ -27,7 +27,7 @@ class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
   # PATCH/PUT /material_batches/1
   def update
     if @material_batch.update_from_params(params)
-      render json: @material_batch, status: :created, include: [:materials, "materials.material_type", "materials.metadata"]
+      render json: @material_batch, include: [:materials, "materials.material_type", "materials.metadata"]
     else
       render json: @material_batch.errors, status: :unprocessable_entity
     end
