@@ -346,6 +346,45 @@ describe Api::V1::MaterialsController, type: :request do
       expect(response_json).to include(:material_type)
       expect(response_json[:material_type]).to include('must exist')
     end
+
+    it 'should fail if given invalid metadata' do
+      material = build(:material_with_metadata, material_type: create(:material_type))
+      material.metadata.last.key = ''
+
+      @material_json = {
+          data: {
+              attributes: {
+                  name: material.name
+              },
+              relationships: {
+                  material_type: {
+                      data: {
+                          attributes: {
+                              name: material.material_type.name
+                          }
+                      }
+                  },
+                  metadata: {
+                      data: material.metadata.map { |metadatum| {
+                          attributes: {
+                              key: metadatum.key,
+                              value: metadatum.value
+                          }
+                      }}
+                  }
+              }
+          }
+      }
+
+      expect { post_json }.to  change { Material.count }.by(0)
+                          .and change { MaterialType.count }.by(0)
+                          .and change { Metadatum.count }.by(0)
+      expect(response).to be_unprocessable
+      response_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response_json).to include(:'metadatum.key')
+      expect(response_json[:'metadatum.key']).to include('can\'t be blank')
+    end
   end
 
   describe "PUT #update" do
@@ -655,6 +694,58 @@ describe Api::V1::MaterialsController, type: :request do
 
       expect(response_json).to include(:uuid)
       expect(response_json[:uuid]).to include('is not a valid UUID')
+    end
+
+    it 'should fail if metadata is invalid' do
+      @material = create(:material_with_metadata)
+
+      @material_json = {
+          data: {
+              attributes: {
+                  name: @material.name + '_changed'
+              },
+              relationships: {
+                  material_type: {
+                      data: {
+                          attributes: {
+                              name: @material.material_type.name
+                          }
+                      }
+                  },
+                  metadata: {
+                      data: @material.metadata.map { |metadatum| {
+                          attributes: {
+                              key: metadatum.key,
+                              value: metadatum.value + '_changed'
+                          }
+                      }} + [{
+                              attributes: {
+                                  key: '',
+                                  value: 'test value'
+                              }
+                          }]
+                  }
+              }
+          }
+      }
+
+      expect { update_material }.to  change { Material.count }.by(0)
+                                .and change { MaterialType.count }.by(0)
+                                .and change { Metadatum.count }.by(0)
+      expect(response).to be_unprocessable
+      response_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response_json).to include(:'metadatum.key')
+      expect(response_json[:'metadatum.key']).to include('can\'t be blank')
+
+      new_material = Material.find(@material.id)
+
+      expect(new_material.name).to eq(@material.name)
+      expect(new_material.metadata.size).to eq(@material.metadata.size)
+      new_material.metadata.zip(@material.metadata).each{ |new_metadatum, metadatum|
+        expect(new_metadatum.key).to eq(metadatum.key)
+        expect(new_metadatum.value).to eq(metadatum.value)
+      }
     end
   end
 end

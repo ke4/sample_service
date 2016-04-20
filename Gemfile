@@ -30,6 +30,8 @@ gem 'uuid'
 group :test do
   gem 'rspec-rails', '~> 3.5.0.beta3'
   gem 'factory_girl_rails'
+
+  gem 'simplecov', :require => false
 end
 
 group :development, :test do
