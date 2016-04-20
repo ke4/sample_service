@@ -471,3 +471,1045 @@ It is optional to the material to has one or more metadata relationship(s).
                 }]
             
             }
+
+## MaterialBatch Collection [/material_batches]
+
+### List All MaterialBatches [GET]
+
+This action response with a list of all material batches.
+
++ Response 200 (application/json)
+
+        {        
+          "data": [
+            {
+              "id": "1",
+              "type": "material-batches",
+              "attributes": {
+                "name": "Material batch name 1"
+              },
+              "relationships": {
+                "materials": {
+                  "data": [
+                    {
+                      "id": "4",
+                      "type": "materials"
+                    },
+                    {
+                      "id": "5",
+                      "type": "materials"
+                    },
+                    {
+                      "id": "6",
+                      "type": "materials"
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "included": [
+            {
+              "id": "4",
+              "type": "materials",
+              "attributes": {
+                "uuid": "61088bd0-e905-0133-db54-005056bf12f5",
+                "name": "material name 49"
+              },
+              "relationships": {
+                "material-type": {
+                  "data": {
+                    "id": "1",
+                    "type": "material-types"
+                  }
+                },
+                "metadata": {
+                  "data": [
+                    {
+                      "id": "3",
+                      "type": "metadata"
+                    },
+                    {
+                      "id": "4",
+                      "type": "metadata"
+                    },
+                    {
+                      "id": "5",
+                      "type": "metadata"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "id": "1",
+              "type": "material-types",
+              "attributes": {
+                "name": "sample"
+              },
+              "links": {
+                "self": "/api/v1/material_types/1"
+              }
+            },
+            {
+              "id": "3",
+              "type": "metadata",
+              "attributes": {
+                "key": "metadatum key 37",
+                "value": "metadatum value 37"
+              }
+            },
+            {
+              "id": "4",
+              "type": "metadata",
+              "attributes": {
+                "key": "metadatum key 38",
+                "value": "metadatum value 38"
+              }
+            },
+            {
+              "id": "5",
+              "type": "metadata",
+              "attributes": {
+                "key": "metadatum key 39",
+                "value": "metadatum value 39"
+              }
+            },
+            {
+              "id": "5",
+              "type": "materials",
+              "attributes": {
+                "uuid": "61096c50-e905-0133-db55-005056bf12f5",
+                "name": "material name 53"
+              },
+              "relationships": {
+                "material-type": {
+                  "data": {
+                    "id": "1",
+                    "type": "material-types"
+                  }
+                },
+                "metadata": {
+                  "data": [
+                    {
+                      "id": "6",
+                      "type": "metadata"
+                    },
+                    {
+                      "id": "7",
+                      "type": "metadata"
+                    },
+                    {
+                      "id": "8",
+                      "type": "metadata"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "id": "6",
+              "type": "metadata",
+              "attributes": {
+                "key": "metadatum key 40",
+                "value": "metadatum value 40"
+              }
+            },
+            {
+              "id": "7",
+              "type": "metadata",
+              "attributes": {
+                "key": "metadatum key 41",
+                "value": "metadatum value 41"
+              }
+            },
+            {
+              "id": "8",
+              "type": "metadata",
+              "attributes": {
+                "key": "metadatum key 42",
+                "value": "metadatum value 42"
+              }
+            },
+            {
+              "id": "6",
+              "type": "materials",
+              "attributes": {
+                "uuid": "610a4d10-e905-0133-db56-005056bf12f5",
+                "name": "material name 57"
+              },
+              "relationships": {
+                "material-type": {
+                  "data": {
+                    "id": "1",
+                    "type": "material-types"
+                  }
+                },
+                "metadata": {
+                  "data": [
+                    {
+                      "id": "9",
+                      "type": "metadata"
+                    },
+                    {
+                      "id": "10",
+                      "type": "metadata"
+                    },
+                    {
+                      "id": "11",
+                      "type": "metadata"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "id": "9",
+              "type": "metadata",
+              "attributes": {
+                "key": "metadatum key 43",
+                "value": "metadatum value 43"
+              }
+            },
+            {
+              "id": "10",
+              "type": "metadata",
+              "attributes": {
+                "key": "metadatum key 44",
+                "value": "metadatum value 44"
+              }
+            },
+            {
+              "id": "11",
+              "type": "metadata",
+              "attributes": {
+                "key": "metadatum key 45",
+                "value": "metadatum value 45"
+              }
+            }
+          ]
+        }
+        
+## MaterialBatch [/material_batches/{id}]
+
+### Get a Material Batch [GET]
+
+This action response with the queried material batches data.
+
++ Response 200 (application/json)
+
+        {
+          "data": {
+            "id": "1",
+            "type": "material-batches",
+            "attributes": {
+              "name": "Material batch name 1"
+            },
+            "relationships": {
+              "materials": {
+                "data": [
+                  {
+                    "id": "4",
+                    "type": "materials"
+                  },
+                  {
+                    "id": "5",
+                    "type": "materials"
+                  },
+                  {
+                    "id": "6",
+                    "type": "materials"
+                  }
+                ]
+              }
+            }
+          },
+          "included": [
+            {
+              "id": "4",
+              "type": "materials",
+              "attributes": {
+                "uuid": "61088bd0-e905-0133-db54-005056bf12f5",
+                "name": "material name 49"
+              },
+              "relationships": {
+                "material-type": {
+                  "data": {
+                    "id": "1",
+                    "type": "material-types"
+                  }
+                },
+                "metadata": {
+                  "data": [
+                    {
+                      "id": "3",
+                      "type": "metadata"
+                    },
+                    {
+                      "id": "4",
+                      "type": "metadata"
+                    },
+                    {
+                      "id": "5",
+                      "type": "metadata"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "id": "1",
+              "type": "material-types",
+              "attributes": {
+                "name": "sample"
+              },
+              "links": {
+                "self": "/api/v1/material_types/1"
+              }
+            },
+            {
+              "id": "3",
+              "type": "metadata",
+              "attributes": {
+                "key": "metadatum key 37",
+                "value": "metadatum value 37"
+              }
+            },
+            {
+              "id": "4",
+              "type": "metadata",
+              "attributes": {
+                "key": "metadatum key 38",
+                "value": "metadatum value 38"
+              }
+            },
+            {
+              "id": "5",
+              "type": "metadata",
+              "attributes": {
+                "key": "metadatum key 39",
+                "value": "metadatum value 39"
+              }
+            },
+            {
+              "id": "5",
+              "type": "materials",
+              "attributes": {
+                "uuid": "61096c50-e905-0133-db55-005056bf12f5",
+                "name": "material name 53"
+              },
+              "relationships": {
+                "material-type": {
+                  "data": {
+                    "id": "1",
+                    "type": "material-types"
+                  }
+                },
+                "metadata": {
+                  "data": [
+                    {
+                      "id": "6",
+                      "type": "metadata"
+                    },
+                    {
+                      "id": "7",
+                      "type": "metadata"
+                    },
+                    {
+                      "id": "8",
+                      "type": "metadata"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "id": "6",
+              "type": "metadata",
+              "attributes": {
+                "key": "metadatum key 40",
+                "value": "metadatum value 40"
+              }
+            },
+            {
+              "id": "7",
+              "type": "metadata",
+              "attributes": {
+                "key": "metadatum key 41",
+                "value": "metadatum value 41"
+              }
+            },
+            {
+              "id": "8",
+              "type": "metadata",
+              "attributes": {
+                "key": "metadatum key 42",
+                "value": "metadatum value 42"
+              }
+            },
+            {
+              "id": "6",
+              "type": "materials",
+              "attributes": {
+                "uuid": "610a4d10-e905-0133-db56-005056bf12f5",
+                "name": "material name 57"
+              },
+              "relationships": {
+                "material-type": {
+                  "data": {
+                    "id": "1",
+                    "type": "material-types"
+                  }
+                },
+                "metadata": {
+                  "data": [
+                    {
+                      "id": "9",
+                      "type": "metadata"
+                    },
+                    {
+                      "id": "10",
+                      "type": "metadata"
+                    },
+                    {
+                      "id": "11",
+                      "type": "metadata"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "id": "9",
+              "type": "metadata",
+              "attributes": {
+                "key": "metadatum key 43",
+                "value": "metadatum value 43"
+              }
+            },
+            {
+              "id": "10",
+              "type": "metadata",
+              "attributes": {
+                "key": "metadatum key 44",
+                "value": "metadatum value 44"
+              }
+            },
+            {
+              "id": "11",
+              "type": "metadata",
+              "attributes": {
+                "key": "metadatum key 45",
+                "value": "metadatum value 45"
+              }
+            }
+          ]
+        }
+        
+## Material Batch creation and update [/material_batches/{id} POST]
+
+You can create a new Material Batch using this action. It takes a JSON-API compatible
+object containing data of the new Material Batch.
+It is mandatory to has one or more Materials and the Materials has to be valid.
+
+### Create a new Material Batch [POST]
+
++ Request (application/vnd.api+json)
+
+        {
+            "data": {
+                "attributes": {
+                    "name": "Material batch name 1"
+                },
+                "relationships": {
+                    "materials": {
+                        "data": [
+                            {
+                                "attributes": {
+                                    "name": "material name 49"
+                                },
+                                "relationships": {
+                                    "material_type": {
+                                        "data": {
+                                            "attributes": {
+                                                "name": "sample"
+                                            }
+                                        }
+                                    },
+                                    "metadata": {
+                                        "data": [
+                                            {
+                                                "attributes": {
+                                                    "key": "metadatum key 37",
+                                                    "value": "metadatum value 37"
+                                                }
+                                            },
+                                            {
+                                                "attributes": {
+                                                    "key": "metadatum key 38",
+                                                    "value": "metadatum value 38"
+                                                }
+                                            },
+                                            {
+                                                "attributes": {
+                                                    "key": "metadatum key 39",
+                                                    "value": "metadatum value 39"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                "attributes": {
+                                    "name": "material name 53"
+                                },
+                                "relationships": {
+                                    "material_type": {
+                                        "data": {
+                                            "attributes": {
+                                                "name": "sample"
+                                            }
+                                        }
+                                    },
+                                    "metadata": {
+                                        "data": [
+                                            {
+                                                "attributes": {
+                                                    "key": "metadatum key 40",
+                                                    "value": "metadatum value 40"
+                                                }
+                                            },
+                                            {
+                                                "attributes": {
+                                                    "key": "metadatum key 41",
+                                                    "value": "metadatum value 41"
+                                                }
+                                            },
+                                            {
+                                                "attributes": {
+                                                    "key": "metadatum key 42",
+                                                    "value": "metadatum value 42"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                "attributes": {
+                                    "name": "material name 57"
+                                },
+                                "relationships": {
+                                    "material_type": {
+                                        "data": {
+                                            "attributes": {
+                                                "name": "sample"
+                                            }
+                                        }
+                                    },
+                                    "metadata": {
+                                        "data": [
+                                            {
+                                                "attributes": {
+                                                    "key": "metadatum key 43",
+                                                    "value": "metadatum value 43"
+                                                }
+                                            },
+                                            {
+                                                "attributes": {
+                                                    "key": "metadatum key 44",
+                                                    "value": "metadatum value 44"
+                                                }
+                                            },
+                                            {
+                                                "attributes": {
+                                                    "key": "metadatum key 45",
+                                                    "value": "metadatum value 45"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
++ Response 201 (application/vnd.api+json)
+
+    + Headers
+
+            Location: /material_batches/1
+
+    + Body
+
+            {
+                "data": {
+                    "attributes": {
+                        "name": "Material batch name 1"
+                    },
+                    "id": "1",
+                    "relationships": {
+                        "materials": {
+                            "data": [
+                                {
+                                    "id": "4",
+                                    "type": "materials"
+                                },
+                                {
+                                    "id": "5",
+                                    "type": "materials"
+                                },
+                                {
+                                    "id": "6",
+                                    "type": "materials"
+                                }
+                            ]
+                        }
+                    },
+                    "type": "material-batches"
+                },
+                "included": [
+                    {
+                        "attributes": {
+                            "name": "material name 49",
+                            "uuid": "61088bd0-e905-0133-db54-005056bf12f5"
+                        },
+                        "id": "4",
+                        "relationships": {
+                            "material-type": {
+                                "data": {
+                                    "id": "1",
+                                    "type": "material-types"
+                                }
+                            },
+                            "metadata": {
+                                "data": [
+                                    {
+                                        "id": "3",
+                                        "type": "metadata"
+                                    },
+                                    {
+                                        "id": "4",
+                                        "type": "metadata"
+                                    },
+                                    {
+                                        "id": "5",
+                                        "type": "metadata"
+                                    }
+                                ]
+                            }
+                        },
+                        "type": "materials"
+                    },
+                    {
+                        "attributes": {
+                            "name": "sample"
+                        },
+                        "id": "1",
+                        "links": {
+                            "self": "/api/v1/material_types/1"
+                        },
+                        "type": "material-types"
+                    },
+                    {
+                        "attributes": {
+                            "key": "metadatum key 37",
+                            "value": "metadatum value 37"
+                        },
+                        "id": "3",
+                        "type": "metadata"
+                    },
+                    {
+                        "attributes": {
+                            "key": "metadatum key 38",
+                            "value": "metadatum value 38"
+                        },
+                        "id": "4",
+                        "type": "metadata"
+                    },
+                    {
+                        "attributes": {
+                            "key": "metadatum key 39",
+                            "value": "metadatum value 39"
+                        },
+                        "id": "5",
+                        "type": "metadata"
+                    },
+                    {
+                        "attributes": {
+                            "name": "material name 53",
+                            "uuid": "61096c50-e905-0133-db55-005056bf12f5"
+                        },
+                        "id": "5",
+                        "relationships": {
+                            "material-type": {
+                                "data": {
+                                    "id": "1",
+                                    "type": "material-types"
+                                }
+                            },
+                            "metadata": {
+                                "data": [
+                                    {
+                                        "id": "6",
+                                        "type": "metadata"
+                                    },
+                                    {
+                                        "id": "7",
+                                        "type": "metadata"
+                                    },
+                                    {
+                                        "id": "8",
+                                        "type": "metadata"
+                                    }
+                                ]
+                            }
+                        },
+                        "type": "materials"
+                    },
+                    {
+                        "attributes": {
+                            "key": "metadatum key 40",
+                            "value": "metadatum value 40"
+                        },
+                        "id": "6",
+                        "type": "metadata"
+                    },
+                    {
+                        "attributes": {
+                            "key": "metadatum key 41",
+                            "value": "metadatum value 41"
+                        },
+                        "id": "7",
+                        "type": "metadata"
+                    },
+                    {
+                        "attributes": {
+                            "key": "metadatum key 42",
+                            "value": "metadatum value 42"
+                        },
+                        "id": "8",
+                        "type": "metadata"
+                    },
+                    {
+                        "attributes": {
+                            "name": "material name 57",
+                            "uuid": "610a4d10-e905-0133-db56-005056bf12f5"
+                        },
+                        "id": "6",
+                        "relationships": {
+                            "material-type": {
+                                "data": {
+                                    "id": "1",
+                                    "type": "material-types"
+                                }
+                            },
+                            "metadata": {
+                                "data": [
+                                    {
+                                        "id": "9",
+                                        "type": "metadata"
+                                    },
+                                    {
+                                        "id": "10",
+                                        "type": "metadata"
+                                    },
+                                    {
+                                        "id": "11",
+                                        "type": "metadata"
+                                    }
+                                ]
+                            }
+                        },
+                        "type": "materials"
+                    },
+                    {
+                        "attributes": {
+                            "key": "metadatum key 43",
+                            "value": "metadatum value 43"
+                        },
+                        "id": "9",
+                        "type": "metadata"
+                    },
+                    {
+                        "attributes": {
+                            "key": "metadatum key 44",
+                            "value": "metadatum value 44"
+                        },
+                        "id": "10",
+                        "type": "metadata"
+                    },
+                    {
+                        "attributes": {
+                            "key": "metadatum key 45",
+                            "value": "metadatum value 45"
+                        },
+                        "id": "11",
+                        "type": "metadata"
+                    }
+                ]
+            }
+            
+### Update an existing Material Batch with modified name and also adding a new material to it [PUT]
+
++ Request (application/vnd.api+json)
+
+        {
+            "data": {
+                "attributes": {
+                    "name": "new name"
+                },
+                "relationships": {
+                    "materials": {
+                        "data": [
+                            {
+                                "id": 1
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
++ Response 201 (application/vnd.api+json)
+
+    + Headers
+
+            Location: /material_batches/1
+
+    + Body
+
+            {
+                "data": {
+                    "attributes": {
+                        "name": "new name"
+                    },
+                    "id": "1",
+                    "relationships": {
+                        "materials": {
+                            "data": [
+                                {
+                                    "id": "4",
+                                    "type": "materials"
+                                },
+                                {
+                                    "id": "5",
+                                    "type": "materials"
+                                },
+                                {
+                                    "id": "6",
+                                    "type": "materials"
+                                },
+                                {
+                                    "id": "1",
+                                    "type": "materials"
+                                }
+                            ]
+                        }
+                    },
+                    "type": "material-batches"
+                },
+                "included": [
+                    {
+                        "attributes": {
+                            "name": "material name 49",
+                            "uuid": "61088bd0-e905-0133-db54-005056bf12f5"
+                        },
+                        "id": "4",
+                        "relationships": {
+                            "material-type": {
+                                "data": {
+                                    "id": "1",
+                                    "type": "material-types"
+                                }
+                            },
+                            "metadata": {
+                                "data": [
+                                    {
+                                        "id": "3",
+                                        "type": "metadata"
+                                    },
+                                    {
+                                        "id": "4",
+                                        "type": "metadata"
+                                    },
+                                    {
+                                        "id": "5",
+                                        "type": "metadata"
+                                    }
+                                ]
+                            }
+                        },
+                        "type": "materials"
+                    },
+                    {
+                        "attributes": {
+                            "name": "sample"
+                        },
+                        "id": "1",
+                        "links": {
+                            "self": "/api/v1/material_types/1"
+                        },
+                        "type": "material-types"
+                    },
+                    {
+                        "attributes": {
+                            "key": "metadatum key 37",
+                            "value": "metadatum value 37"
+                        },
+                        "id": "3",
+                        "type": "metadata"
+                    },
+                    {
+                        "attributes": {
+                            "key": "metadatum key 38",
+                            "value": "metadatum value 38"
+                        },
+                        "id": "4",
+                        "type": "metadata"
+                    },
+                    {
+                        "attributes": {
+                            "key": "metadatum key 39",
+                            "value": "metadatum value 39"
+                        },
+                        "id": "5",
+                        "type": "metadata"
+                    },
+                    {
+                        "attributes": {
+                            "name": "material name 53",
+                            "uuid": "61096c50-e905-0133-db55-005056bf12f5"
+                        },
+                        "id": "5",
+                        "relationships": {
+                            "material-type": {
+                                "data": {
+                                    "id": "1",
+                                    "type": "material-types"
+                                }
+                            },
+                            "metadata": {
+                                "data": [
+                                    {
+                                        "id": "6",
+                                        "type": "metadata"
+                                    },
+                                    {
+                                        "id": "7",
+                                        "type": "metadata"
+                                    },
+                                    {
+                                        "id": "8",
+                                        "type": "metadata"
+                                    }
+                                ]
+                            }
+                        },
+                        "type": "materials"
+                    },
+                    {
+                        "attributes": {
+                            "key": "metadatum key 40",
+                            "value": "metadatum value 40"
+                        },
+                        "id": "6",
+                        "type": "metadata"
+                    },
+                    {
+                        "attributes": {
+                            "key": "metadatum key 41",
+                            "value": "metadatum value 41"
+                        },
+                        "id": "7",
+                        "type": "metadata"
+                    },
+                    {
+                        "attributes": {
+                            "key": "metadatum key 42",
+                            "value": "metadatum value 42"
+                        },
+                        "id": "8",
+                        "type": "metadata"
+                    },
+                    {
+                        "attributes": {
+                            "name": "material name 57",
+                            "uuid": "610a4d10-e905-0133-db56-005056bf12f5"
+                        },
+                        "id": "6",
+                        "relationships": {
+                            "material-type": {
+                                "data": {
+                                    "id": "1",
+                                    "type": "material-types"
+                                }
+                            },
+                            "metadata": {
+                                "data": [
+                                    {
+                                        "id": "9",
+                                        "type": "metadata"
+                                    },
+                                    {
+                                        "id": "10",
+                                        "type": "metadata"
+                                    },
+                                    {
+                                        "id": "11",
+                                        "type": "metadata"
+                                    }
+                                ]
+                            }
+                        },
+                        "type": "materials"
+                    },
+                    {
+                        "attributes": {
+                            "key": "metadatum key 43",
+                            "value": "metadatum value 43"
+                        },
+                        "id": "9",
+                        "type": "metadata"
+                    },
+                    {
+                        "attributes": {
+                            "key": "metadatum key 44",
+                            "value": "metadatum value 44"
+                        },
+                        "id": "10",
+                        "type": "metadata"
+                    },
+                    {
+                        "attributes": {
+                            "key": "metadatum key 45",
+                            "value": "metadatum value 45"
+                        },
+                        "id": "11",
+                        "type": "metadata"
+                    },
+                    {
+                        "attributes": {
+                            "name": "sample abc",
+                            "uuid": "8b8959b0-e852-0133-db51-005056bf12f5"
+                        },
+                        "id": "1",
+                        "relationships": {
+                            "material-type": {
+                                "data": {
+                                    "id": "1",
+                                    "type": "material-types"
+                                }
+                            },
+                            "metadata": {
+                                "data": []
+                            }
+                        },
+                        "type": "materials"
+                    }
+                ]
+            }
