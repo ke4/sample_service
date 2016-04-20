@@ -8,7 +8,7 @@ class Material < ApplicationRecord
 
   validates :name, presence: true
   validates :uuid, uniqueness: {case_sensitive: false}, uuid: true
-  validate  :validate_each_metadatum
+  validates :metadata, children: true
 
   after_initialize :generate_uuid, if: "uuid.nil?"
 
@@ -58,16 +58,6 @@ class Material < ApplicationRecord
   end
 
   private
-
-  def validate_each_metadatum
-    metadata.each { |metadatum|
-      metadatum.errors.each { |key|
-        metadatum.errors[key].each { |error|
-          errors.add("metadatum.#{key}", error)
-        }
-      }
-    }
-  end
 
   def generate_uuid
     self.uuid = UUID.new.generate

@@ -1,8 +1,7 @@
 class MaterialBatch < ApplicationRecord
   has_and_belongs_to_many :materials
 
-  validates :materials, presence: true
-  validate :validate_each_material
+  validates :materials, presence: true, children: true
 
   def self.build_from_params(params)
     material_batch = MaterialBatch.new(material_batch_create_params(params))
@@ -52,16 +51,6 @@ class MaterialBatch < ApplicationRecord
   end
 
   private
-
-  def validate_each_material
-    materials.each { |material|
-      material.errors.each { |key|
-        material.errors[key].each { |error|
-          errors.add("material.#{key}", error)
-        }
-      }
-    }
-  end
 
   # Only allow a trusted parameter "white list" through.
   def self.material_batch_create_params(params)
