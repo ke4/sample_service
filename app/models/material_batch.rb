@@ -1,7 +1,7 @@
 class MaterialBatch < ApplicationRecord
   has_and_belongs_to_many :materials
 
-  validates :materials, presence: true, children: true
+  validates :materials, presence: true, gather_attribute_errors: true
 
   def self.build_from_params(params)
     material_batch = MaterialBatch.new(material_batch_create_params(params))

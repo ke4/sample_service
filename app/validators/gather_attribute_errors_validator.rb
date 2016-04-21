@@ -1,5 +1,5 @@
 # See README.md for copyright details
-class ChildrenValidator < ActiveModel::EachValidator
+class GatherAttributeErrorsValidator < ActiveModel::EachValidator
   def validate_each(record, attribute, value)
     value.each{ |child|
       child.errors.each { |key|

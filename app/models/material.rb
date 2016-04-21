@@ -8,7 +8,7 @@ class Material < ApplicationRecord
 
   validates :name, presence: true
   validates :uuid, uniqueness: {case_sensitive: false}, uuid: true
-  validates :metadata, children: true
+  validates :metadata, gather_attribute_errors: true
 
   after_initialize :generate_uuid, if: "uuid.nil?"
 
