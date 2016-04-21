@@ -20,6 +20,9 @@
 !/log/.keep
 !/tmp/.keep
 
+# Ignore the coverage data
+/coverage
+
 # Ignore Byebug command history file.
 .byebug_history
 
