@@ -222,7 +222,41 @@ RSpec.describe "MaterialBatches", type: :request do
       }
     end
 
-    it "should update the material_batch when adding an existing material" do
+    it 'should leave the other materials unchanged' do
+      @material_batch = create(:material_batch_with_metadata)
+      material = @material_batch.materials[1]
+      material.name += '_changed'
+
+      @material_batch_json = {
+          data: {
+              relationships: {
+                  materials: {
+                      data: [{
+                          id: material.uuid,
+                          attributes: {
+                              name: material.name
+                          }
+                      }]
+                  }
+              }
+          }
+      }
+
+      expect { update_material_batch }.to  change { MaterialBatch.count }.by(0)
+                                      .and change { Material.count }.by(0)
+                                      .and change { MaterialType.count }.by(0)
+                                      .and change { Metadatum.count }.by(0)
+      expect(response).to be_success
+      response_json = JSON.parse(response.body, symbolize_names: true)
+
+      new_material_batch = MaterialBatch.find(@material_batch.id)
+
+      new_material_batch.materials.zip(@material_batch.materials).each { |new_material, old_material|
+        expect(new_material.name).to eq(old_material.name)
+      }
+    end
+
+    it "should not allow materials to be added to an existing batch" do
       @material_batch = create(:material_batch_with_metadata)
       material = create(:material_with_metadata)
 
@@ -238,23 +272,19 @@ RSpec.describe "MaterialBatches", type: :request do
           }
       }
 
-      expect { update_material_batch }.to change { MaterialBatch.count }.by(0)
+      expect { update_material_batch }.to change  { MaterialBatch.count }.by(0)
                                       .and change { Material.count }.by(0)
                                       .and change { MaterialType.count }.by(0)
                                       .and change { Metadatum.count }.by(0)
-                                      .and change { @material_batch.materials.count }.by(1)
-      expect(response).to be_success
+                                      .and change { @material_batch.materials.count }.by(0)
+      expect(response).to be_unprocessable
       response_json = JSON.parse(response.body, symbolize_names: true)
 
-      new_material_batch = MaterialBatch.find(@material_batch.id)
-      expect(new_material_batch.materials).to include(material)
-
-      (@material_batch.materials + [material]).zip(new_material_batch.materials).each { |old_material, persisted_material|
-        expect(old_material.name).to eq(persisted_material.name)
-      }
+      expect(response_json).to include(:materials)
+      expect(response_json[:materials]).to include('can\'t be added to an existing batch')
     end
 
-    it "should update the material_batch when adding a new material" do
+    it 'should not allow new materials to be created in an existing batch' do
       @material_batch = create(:material_batch_with_metadata)
       material = build(:material_with_metadata, material_type: create(:material_type))
 
@@ -278,8 +308,8 @@ RSpec.describe "MaterialBatches", type: :request do
                                   metadata: {
                                       data: material.metadata.map{ |metadatum| {
                                           attributes: {
-                                            key: metadatum.key,
-                                            value: metadatum.value
+                                              key: metadatum.key,
+                                              value: metadatum.value
                                           }
                                       }}
                                   }
@@ -291,24 +321,16 @@ RSpec.describe "MaterialBatches", type: :request do
           }
       }
 
-      expect { update_material_batch }.to change { MaterialBatch.count }.by(0)
-                                      .and change { Material.count }.by(1)
+      expect { update_material_batch }.to change  { MaterialBatch.count }.by(0)
+                                      .and change { Material.count }.by(0)
                                       .and change { MaterialType.count }.by(0)
-                                      .and change { Metadatum.count }.by(3)
-                                      .and change { @material_batch.materials.count }.by(1)
-      expect(response).to be_success
+                                      .and change { Metadatum.count }.by(0)
+                                      .and change { @material_batch.materials.count }.by(0)
+      expect(response).to be_unprocessable
       response_json = JSON.parse(response.body, symbolize_names: true)
 
-      new_material_batch = MaterialBatch.find(@material_batch.id)
-
-      (@material_batch.materials + [material]).zip(new_material_batch.materials).each { |old_material, persisted_material|
-        expect(old_material.name).to eq(persisted_material.name)
-
-        old_material.metadata.zip(persisted_material.metadata).each { |old_metadatum, persisted_metadatum|
-          expect(old_metadatum.key).to eq(persisted_metadatum.key)
-          expect(old_metadatum.value).to eq(persisted_metadatum.value)
-        }
-      }
+      expect(response_json).to include(:'materials.id')
+      expect(response_json[:'materials.id']).to include('can\'t be blank')
     end
 
     it 'should rollback completely if invalid' do

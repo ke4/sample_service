@@ -26,9 +26,10 @@ class MaterialBatch < ApplicationRecord
             material.update_from_params(param)
 
             unless self.materials.include? material
-              self.materials << material
+              self.errors.add :materials, 'can\'t be added to an existing batch'
             end
           else
+            self.errors.add :'materials.id', 'can\'t be blank'
             material = Material.build_from_params(param)
             self.materials << material
           end
