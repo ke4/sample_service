@@ -37,7 +37,7 @@ class Api::V1::MaterialsController < Api::V1::ApplicationController
 
   # Use callbacks to share common setup or constraints between actions.
   def set_material
-    @material = Material.find(params[:id])
+    @material = Material.find_by(uuid: params[:id])
   end
 
   # Only allow a trusted parameter "white list" through.

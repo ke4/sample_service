@@ -7,7 +7,7 @@ RSpec.describe "MaterialBatches", type: :request do
     expect(material_batch_json_data[:relationships][:materials][:data].size).to eq(material_batch.materials.size)
 
     material_batch_json_data[:relationships][:materials][:data].zip(material_batch.materials).each do |material_response, material_original|
-      expect(material_response[:id]).to eq(material_original.id.to_s)
+      expect(material_response[:id]).to eq(material_original.uuid)
     end
   end
 
@@ -198,7 +198,7 @@ RSpec.describe "MaterialBatches", type: :request do
               relationships: {
                   materials: {
                       data: @material_batch.materials.map { |material| {
-                          id: material.id,
+                          id: material.uuid,
                           attributes: {
                               name: material.name + '_changed'
                           }
@@ -208,7 +208,7 @@ RSpec.describe "MaterialBatches", type: :request do
           }
       }
 
-      expect { update_material_batch }.to change { MaterialBatch.count }.by(0)
+      expect { update_material_batch }.to  change { MaterialBatch.count }.by(0)
                                       .and change { Material.count }.by(0)
                                       .and change { MaterialType.count }.by(0)
                                       .and change { Metadatum.count }.by(0)
@@ -231,7 +231,7 @@ RSpec.describe "MaterialBatches", type: :request do
               relationships: {
                   materials: {
                       data: [
-                          id: material.id,
+                          id: material.uuid,
                       ]
                   }
               }
@@ -323,13 +323,13 @@ RSpec.describe "MaterialBatches", type: :request do
                   materials: {
                       data: [
                           {
-                              id: @material_batch.materials.first.id,
+                              id: @material_batch.materials.first.uuid,
                               attributes: {
                                   name: 'new_material_name'
                               }
                           },
                           {
-                              id: @material_batch.materials.first.id,
+                              id: @material_batch.materials.first.uuid,
                               attributes: {
                                   name: ''
                               }

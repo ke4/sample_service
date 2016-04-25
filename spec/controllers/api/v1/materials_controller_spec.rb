@@ -2,9 +2,8 @@ require 'rails_helper'
 
 describe Api::V1::MaterialsController, type: :request do
   def validate_material(material_json_data, material)
-    expect(material_json_data[:id]).to eq(material.id.to_s)
+    expect(material_json_data[:id]).to eq(material.uuid)
     expect(material_json_data[:attributes][:name]).to eq(material.name)
-    expect(material_json_data[:attributes][:uuid]).to eq(material.uuid)
     expect(material_json_data[:relationships][:"material-type"][:data][:id]).to eq(material.material_type.id.to_s)
   end
 
@@ -16,7 +15,7 @@ describe Api::V1::MaterialsController, type: :request do
 
   def validate_material_with_metadata(material_json_data, material)
     (0...material.metadata.count).each do |n|
-        expect(material_json_data[:relationships][:metadata][:data][n][:id]).to eq(material.metadata[n].id.to_s)
+      expect(material_json_data[:relationships][:metadata][:data][n][:id]).to eq(material.metadata[n].id.to_s)
     end
   end
 
@@ -32,7 +31,7 @@ describe Api::V1::MaterialsController, type: :request do
     it "should return a serialized material instance" do
       material = create(:material)
 
-      get api_v1_material_path(material)
+      get api_v1_material_path(material.uuid)
       expect(response).to be_success
 
       material_json = JSON.parse(response.body, symbolize_names: true)
@@ -47,7 +46,7 @@ describe Api::V1::MaterialsController, type: :request do
     it "should return a serialized material instance with metadata" do
       material = create(:material_with_metadata)
 
-      get api_v1_material_path(material)
+      get api_v1_material_path(material.uuid)
       expect(response).to be_success
 
       material_json = JSON.parse(response.body, symbolize_names: true)
@@ -74,7 +73,7 @@ describe Api::V1::MaterialsController, type: :request do
 
         validate_material(material_json[:data][n], materials[n])
 
-        material_type_json = material_json[:included].select { |obj| 
+        material_type_json = material_json[:included].select { |obj|
           obj[:type] == 'material-types' and obj[:id] == material_json[:data][n][:relationships][:"material-type"][:data][:id] }[0]
 
         validate_included_material_type(material_type_json, materials[n].material_type)
@@ -104,7 +103,7 @@ describe Api::V1::MaterialsController, type: :request do
 
     let(:post_json) {
       headers = {
-        'Content-Type' => 'application/json'
+          'Content-Type' => 'application/json'
       }
 
       post api_v1_materials_path, params: @material_json.to_json, headers: headers
@@ -113,7 +112,7 @@ describe Api::V1::MaterialsController, type: :request do
     let(:check_reponse_is_same) {
       expect(response).to be_created
       post_response = response
-      get api_v1_material_path(Material.last)
+      get api_v1_material_path(Material.last.uuid)
       get_response = response
       expect(post_response.body).to eq(get_response.body)
     }
@@ -122,20 +121,20 @@ describe Api::V1::MaterialsController, type: :request do
       material = build(:material, material_type: create(:material_type))
 
       @material_json = {
-        data: {
-          attributes: {
-            name: material.name
-          },
-          relationships: {
-            material_type: {
-              data: {
-                attributes: {
-                  name: material.material_type.name
-                }
+          data: {
+              attributes: {
+                  name: material.name
+              },
+              relationships: {
+                  material_type: {
+                      data: {
+                          attributes: {
+                              name: material.material_type.name
+                          }
+                      }
+                  }
               }
-            }
           }
-        }
       }
 
       expect { post_json }.to  change { Material.count }.by(1)
@@ -155,21 +154,21 @@ describe Api::V1::MaterialsController, type: :request do
       material = build(:material, material_type: create(:material_type))
 
       @material_json = {
-        data: {
-          attributes: {
-            name: material.name,
-            uuid: material.uuid
-          },
-          relationships: {
-            material_type: {
-              data: {
-                attributes: {
-                  name: material.material_type.name
-                }
+          data: {
+              id: material.uuid,
+              attributes: {
+                  name: material.name
+              },
+              relationships: {
+                  material_type: {
+                      data: {
+                          attributes: {
+                              name: material.material_type.name
+                          }
+                      }
+                  }
               }
-            }
           }
-        }
       }
 
       expect { post_json }.to  change { Material.count }.by(1)
@@ -186,21 +185,21 @@ describe Api::V1::MaterialsController, type: :request do
       material = build(:material, material_type: create(:material_type))
 
       @material_json = {
-        data: {
-          attributes: {
-            name: material.name,
-            uuid: '123456789'
-          },
-          relationships: {
-            material_type: {
-              data: {
-                attributes: {
-                  name: material.material_type.name
-                }
+          data: {
+              id: '123456789',
+              attributes: {
+                  name: material.name,
+              },
+              relationships: {
+                  material_type: {
+                      data: {
+                          attributes: {
+                              name: material.material_type.name
+                          }
+                      }
+                  }
               }
-            }
           }
-        }
       }
 
       post_json
@@ -215,57 +214,56 @@ describe Api::V1::MaterialsController, type: :request do
       material = build(:material, material_type: create(:material_type))
 
       @material_json = {
-        data: {
-          attributes: {
-            name: material.name
-          },
-          relationships: {
-            material_type: {
-              data: {
-                attributes: {
-                  name: material.material_type.name
-                }
+          data: {
+              attributes: {
+                  name: material.name
+              },
+              relationships: {
+                  material_type: {
+                      data: {
+                          attributes: {
+                              name: material.material_type.name
+                          }
+                      }
+                  }
               }
-            }
           }
-        }
       }
 
       post_json
       expect(response).to be_created
       response_json = JSON.parse(response.body, symbolize_names: true)
 
-      expect(response_json[:data][:id]).to eq(Material.last.id.to_s)
+      expect(response_json[:data][:id]).to eq(Material.last.uuid)
       expect(response_json[:data][:type]).to eq('materials')
       expect(response_json[:data][:attributes][:name]).to eq(material.name)
-      expect(response_json[:data][:attributes][:uuid]).to eq(Material.last.uuid)
       expect(response_json[:data][:relationships][:"material-type"][:data][:id]).to eq(material.material_type.id.to_s)
 
-      expect(response_json[:included].find{ |obj| obj[:type] == 'material-types' }[:id]).to eq(material.material_type.id.to_s)
-      expect(response_json[:included].find{ |obj| obj[:type] == 'material-types' }[:attributes][:name]).to eq(material.material_type.name)
+      expect(response_json[:included].find { |obj| obj[:type] == 'material-types' }[:id]).to eq(material.material_type.id.to_s)
+      expect(response_json[:included].find { |obj| obj[:type] == 'material-types' }[:attributes][:name]).to eq(material.material_type.name)
     end
 
     it "should create a material instance with metadata" do
       material = build(:material_with_metadata, material_type: create(:material_type))
 
       @material_json = {
-        data: {
-          attributes: {
-            name: material.name
-          },
-          relationships: {
-            material_type: {
-              data: {
-                attributes: {
-                  name: material.material_type.name
-                }
+          data: {
+              attributes: {
+                  name: material.name
+              },
+              relationships: {
+                  material_type: {
+                      data: {
+                          attributes: {
+                              name: material.material_type.name
+                          }
+                      }
+                  },
+                  metadata: {
+                      data: material.metadata.map { |metadatum| {attributes: {key: metadatum.key, value: metadatum.value}} }
+                  }
               }
-            },
-            metadata: {
-              data: material.metadata.map { |metadatum| { attributes: { key: metadatum.key, value: metadatum.value } } }
-            }
           }
-        }
       }
 
       expect { post_json }.to  change { Material.count }.by(1)
@@ -285,23 +283,23 @@ describe Api::V1::MaterialsController, type: :request do
       material = build(:material_with_metadata, material_type: create(:material_type))
 
       @material_json = {
-        data: {
-          attributes: {
-            name: material.name
-          },
-          relationships: {
-            material_type: {
-              data: {
-                attributes: {
-                  name: material.material_type.name
-                }
+          data: {
+              attributes: {
+                  name: material.name
+              },
+              relationships: {
+                  material_type: {
+                      data: {
+                          attributes: {
+                              name: material.material_type.name
+                          }
+                      }
+                  },
+                  metadata: {
+                      data: material.metadata.map { |metadatum| {attributes: {key: metadatum.key, value: metadatum.value}} }
+                  }
               }
-            },
-            metadata: {
-              data: material.metadata.map { |metadatum| { attributes: { key: metadatum.key, value: metadatum.value } } }
-            }
           }
-        }
       }
 
       post_json
@@ -310,8 +308,8 @@ describe Api::V1::MaterialsController, type: :request do
 
       expect(response_json[:data][:relationships][:metadata][:data].size).to eq(material.metadata.size)
 
-      expect(response_json[:included].select{ |obj| obj[:type] == 'metadata' }.size).to eq(material.metadata.size)
-      response_json[:included].select{ |obj| obj[:type] == 'metadata' }.zip(material.metadata).each do |included_metadata, metadata|
+      expect(response_json[:included].select { |obj| obj[:type] == 'metadata' }.size).to eq(material.metadata.size)
+      response_json[:included].select { |obj| obj[:type] == 'metadata' }.zip(material.metadata).each do |included_metadata, metadata|
         expect(included_metadata[:attributes][:key]).to eq(metadata.key)
         expect(included_metadata[:attributes][:value]).to eq(metadata.value)
       end
@@ -321,20 +319,20 @@ describe Api::V1::MaterialsController, type: :request do
       material = build(:material)
 
       @material_json = {
-        data: {
-          attributes: {
-            name: material.name
-          },
-          relationships: {
-            material_type: {
-              data: {
-                attributes: {
-                  name: "fake material"
-                }
+          data: {
+              attributes: {
+                  name: material.name
+              },
+              relationships: {
+                  material_type: {
+                      data: {
+                          attributes: {
+                              name: "fake material"
+                          }
+                      }
+                  }
               }
-            }
           }
-        }
       }
 
       expect { post_json }.to  change { Material.count }.by(0)
@@ -342,7 +340,7 @@ describe Api::V1::MaterialsController, type: :request do
                           .and change { Metadatum.count }.by(0)
       expect(response).to be_unprocessable
       response_json = JSON.parse(response.body, symbolize_names: true)
-       
+
       expect(response_json).to include(:material_type)
       expect(response_json[:material_type]).to include('must exist')
     end
@@ -370,7 +368,7 @@ describe Api::V1::MaterialsController, type: :request do
                               key: metadatum.key,
                               value: metadatum.value
                           }
-                      }}
+                      } }
                   }
               }
           }
@@ -390,27 +388,25 @@ describe Api::V1::MaterialsController, type: :request do
   describe "PUT #update" do
     let(:update_material) {
       headers = {
-        'Content-Type' => 'application/json'
+          'Content-Type' => 'application/json'
       }
 
-      put api_v1_material_path(@material), params: @material_json.to_json, headers: headers
+      put api_v1_material_path(@material.uuid), params: @material_json.to_json, headers: headers
     }
 
     it 'should update the attributes' do
       @material = create(:material)
       new_name = 'new name'
-      new_uuid = UUID.new.generate
 
       @material_json = {
-        data: {
-          attributes: {
-            name: new_name,
-            uuid: new_uuid
+          data: {
+              attributes: {
+                  name: new_name
+              }
           }
-        }
       }
 
-      expect { update_material }.to change {Material.count }.by(0)
+      expect { update_material }.to  change { Material.count }.by(0)
                                 .and change { MaterialType.count }.by(0)
                                 .and change { Metadatum.count }.by(0)
 
@@ -419,12 +415,11 @@ describe Api::V1::MaterialsController, type: :request do
       expect(response).to be_success
 
       expect(response_json[:data][:attributes][:name]).to eq(new_name)
-      expect(response_json[:data][:attributes][:uuid]).to eq(new_uuid)
 
-      @material.reload
+      new_material = Material.find(@material.id)
 
-      expect(@material.name).to eq(new_name)
-      expect(@material.uuid).to eq(new_uuid)
+      expect(new_material.name).to eq(new_name)
+      expect(new_material.uuid).to eq(@material.uuid)
     end
 
     it 'should keep the old attributes if none are provided' do
@@ -433,14 +428,12 @@ describe Api::V1::MaterialsController, type: :request do
       new_uuid = UUID.new.generate
 
       @material_json = {
-        data: {
-          attributes: {
-            uuid: new_uuid
+          data: {
+              id: new_uuid
           }
-        }
       }
 
-      expect { update_material }.to change {Material.count }.by(0)
+      expect { update_material }.to  change { Material.count }.by(0)
                                 .and change { MaterialType.count }.by(0)
                                 .and change { Metadatum.count }.by(0)
 
@@ -448,8 +441,8 @@ describe Api::V1::MaterialsController, type: :request do
 
       expect(response).to be_success
 
+      expect(response_json[:data][:id]).to eq(new_uuid)
       expect(response_json[:data][:attributes][:name]).to eq(old_name)
-      expect(response_json[:data][:attributes][:uuid]).to eq(new_uuid)
 
       @material.reload
 
@@ -464,24 +457,24 @@ describe Api::V1::MaterialsController, type: :request do
       new_uuid = UUID.new.generate
 
       @material_json = {
-        data: {
-          attributes: {
-            name: new_name,
-            uuid: new_uuid
-          },
-          relationships: {
-            material_type: {
-              data: {
-                attributes: {
-                  name: new_material_type.name
-                }
+          data: {
+              id: new_uuid,
+              attributes: {
+                  name: new_name,
+              },
+              relationships: {
+                  material_type: {
+                      data: {
+                          attributes: {
+                              name: new_material_type.name
+                          }
+                      }
+                  }
               }
-            }
           }
-        }
       }
 
-      expect { update_material }.to change {Material.count }.by(0)
+      expect { update_material }.to  change { Material.count }.by(0)
                                 .and change { MaterialType.count }.by(0)
                                 .and change { Metadatum.count }.by(0)
 
@@ -489,8 +482,8 @@ describe Api::V1::MaterialsController, type: :request do
 
       expect(response).to be_success
 
+      expect(response_json[:data][:id]).to eq(new_uuid)
       expect(response_json[:data][:attributes][:name]).to eq(new_name)
-      expect(response_json[:data][:attributes][:uuid]).to eq(new_uuid)
       expect(response_json[:data][:relationships][:"material-type"][:data][:id]).to eq(new_material_type.id.to_s)
 
       @material.reload
@@ -508,20 +501,20 @@ describe Api::V1::MaterialsController, type: :request do
       new_material_type = create(:material_type)
 
       @material_json = {
-        data: {
-          relationships: {
-            material_type: {
-              data: {
-                attributes: {
-                  name: new_material_type.name
-                }
+          data: {
+              relationships: {
+                  material_type: {
+                      data: {
+                          attributes: {
+                              name: new_material_type.name
+                          }
+                      }
+                  }
               }
-            }
           }
-        }
       }
 
-      expect { update_material }.to change {Material.count }.by(0)
+      expect { update_material }.to  change { Material.count }.by(0)
                                 .and change { MaterialType.count }.by(0)
                                 .and change { Metadatum.count }.by(0)
 
@@ -529,8 +522,8 @@ describe Api::V1::MaterialsController, type: :request do
 
       expect(response).to be_success
 
+      expect(response_json[:data][:id]).to eq(original_uuid)
       expect(response_json[:data][:attributes][:name]).to eq(original_name)
-      expect(response_json[:data][:attributes][:uuid]).to eq(original_uuid)
       expect(response_json[:data][:relationships][:"material-type"][:data][:id]).to eq(new_material_type.id.to_s)
 
       @material.reload
@@ -544,26 +537,26 @@ describe Api::V1::MaterialsController, type: :request do
       @material = create(:material_with_metadata)
 
       @material_json = {
-        data: {
-          attributes: {
-            name: @material.name
-          },
-          relationships: {
-            material_type: {
-              data: {
-                attributes: {
-                  name: @material.material_type.name
-                }
+          data: {
+              attributes: {
+                  name: @material.name
+              },
+              relationships: {
+                  material_type: {
+                      data: {
+                          attributes: {
+                              name: @material.material_type.name
+                          }
+                      }
+                  },
+                  metadata: {
+                      data: @material.metadata.map { |metadatum| {attributes: {key: metadatum.key, value: metadatum.value + "_changed"}} }
+                  }
               }
-            },
-            metadata: {
-              data: @material.metadata.map { |metadatum| { attributes: { key: metadatum.key, value: metadatum.value + "_changed" } } }
-            }
           }
-        }
       }
 
-      expect { update_material }.to change {Material.count }.by(0)
+      expect { update_material }.to  change { Material.count }.by(0)
                                 .and change { MaterialType.count }.by(0)
                                 .and change { Metadatum.count }.by(0)
 
@@ -574,9 +567,9 @@ describe Api::V1::MaterialsController, type: :request do
       response_json[:data][:relationships][:metadata][:data].zip(@material.metadata) do |new_metadata, old_metadata|
         expect(new_metadata[:id]).to eq(old_metadata.id.to_s)
       end
-      expect(response_json[:included].select{ |obj| obj[:type] == "metadata" }.size).to eq(@material.metadata.size)
+      expect(response_json[:included].select { |obj| obj[:type] == "metadata" }.size).to eq(@material.metadata.size)
       @material.metadata.each do |metadatum|
-        metadatum_json = response_json[:included].find{ |obj| obj[:type] == "metadata" and obj[:id] == metadatum.id.to_s }
+        metadatum_json = response_json[:included].find { |obj| obj[:type] == "metadata" and obj[:id] == metadatum.id.to_s }
         expect(metadatum_json[:attributes][:key]).to eq(metadatum.key)
         expect(metadatum_json[:attributes][:value]).to eq(metadatum.value + '_changed')
       end
@@ -594,16 +587,16 @@ describe Api::V1::MaterialsController, type: :request do
       new_metadatum = build(:metadatum)
 
       @material_json = {
-        data: {
-          relationships: {
-            metadata: {
-              data: (@material.metadata + [new_metadatum]).map { |metadatum| { attributes: { key: metadatum.key, value: metadatum.value } } }
-            }
+          data: {
+              relationships: {
+                  metadata: {
+                      data: (@material.metadata + [new_metadatum]).map { |metadatum| {attributes: {key: metadatum.key, value: metadatum.value}} }
+                  }
+              }
           }
-        }
       }
 
-      expect { update_material }.to change {Material.count }.by(0)
+      expect { update_material }.to  change { Material.count }.by(0)
                                 .and change { MaterialType.count }.by(0)
                                 .and change { Metadatum.count }.by(1)
       expect(response).to be_success
@@ -614,9 +607,9 @@ describe Api::V1::MaterialsController, type: :request do
         expect(new_metadata[:id]).to eq(old_metadata.id.to_s)
       end
 
-      expect(response_json[:included].select{ |obj| obj[:type] == "metadata" }.size).to eq(@material.metadata.size + 1)
+      expect(response_json[:included].select { |obj| obj[:type] == "metadata" }.size).to eq(@material.metadata.size + 1)
       (@material.metadata).each do |metadatum|
-        metadatum_json = response_json[:included].find{ |obj| obj[:type] == "metadata" and obj[:id] == metadatum.id.to_s }
+        metadatum_json = response_json[:included].find { |obj| obj[:type] == "metadata" and obj[:id] == metadatum.id.to_s }
         expect(metadatum_json[:attributes][:key]).to eq(metadatum.key)
         expect(metadatum_json[:attributes][:value]).to eq(metadatum.value)
       end
@@ -639,13 +632,13 @@ describe Api::V1::MaterialsController, type: :request do
       @material = create(:material_with_metadata)
 
       @material_json = {
-        data: {
-          attributes: {},
-          relationships: {}
-        }
+          data: {
+              attributes: {},
+              relationships: {}
+          }
       }
 
-      expect { update_material }.to change {Material.count }.by(0)
+      expect { update_material }.to  change { Material.count }.by(0)
                                 .and change { MaterialType.count }.by(0)
                                 .and change { Metadatum.count }.by(0)
       expect(response).to be_success
@@ -655,31 +648,30 @@ describe Api::V1::MaterialsController, type: :request do
       expect(Material.find(@material.id).metadata).to eq(@material.metadata)
     end
 
-    it 'should not alter the database if the request is unsuccessful' do 
+    it 'should not alter the database if the request is unsuccessful' do
       @material = create(:material_with_metadata)
       new_metadatum = build(:metadatum)
- 
+
       @material_json = {
-        data: {
-          attributes: {
-            name: "new name",
-            uuid: '123456'
-          },
-          relationships: {
-            material_type: {
-              data: {
-                attributes: {
-                  name: @material.material_type.name
-                }
+          data: {
+              attributes: {
+                  name: "new name"
+              },
+              relationships: {
+                  material_type: {
+                      data: {
+                          attributes: {
+                              name: 'fake material type'
+                          }
+                      }
+                  },
+                  metadata: {
+                      data: (@material.metadata + [new_metadatum]).map { |metadatum| {attributes: {key: metadatum.key, value: metadatum.value + "_changed"}} }
+                  }
               }
-            },
-            metadata: {
-              data: (@material.metadata + [new_metadatum]).map { |metadatum| { attributes: { key: metadatum.key, value: metadatum.value + "_changed" } } }
-            }
           }
-        }
       }
-    
+
       expect { update_material }.to  change { Material.count }.by(0)
                                 .and change { MaterialType.count }.by(0)
                                 .and change { Metadatum.count }.by(0)
@@ -692,8 +684,8 @@ describe Api::V1::MaterialsController, type: :request do
 
       expect(new_material.metadata.first.value).to eq(@material.metadata.first.value)
 
-      expect(response_json).to include(:uuid)
-      expect(response_json[:uuid]).to include('is not a valid UUID')
+      expect(response_json).to include(:material_type)
+      expect(response_json[:material_type]).to include('must exist')
     end
 
     it 'should fail if metadata is invalid' do
@@ -718,12 +710,12 @@ describe Api::V1::MaterialsController, type: :request do
                               key: metadatum.key,
                               value: metadatum.value + '_changed'
                           }
-                      }} + [{
-                              attributes: {
-                                  key: '',
-                                  value: 'test value'
-                              }
-                          }]
+                      } } + [{
+                                 attributes: {
+                                     key: '',
+                                     value: 'test value'
+                                 }
+                             }]
                   }
               }
           }
@@ -742,7 +734,7 @@ describe Api::V1::MaterialsController, type: :request do
 
       expect(new_material.name).to eq(@material.name)
       expect(new_material.metadata.size).to eq(@material.metadata.size)
-      new_material.metadata.zip(@material.metadata).each{ |new_metadatum, metadatum|
+      new_material.metadata.zip(@material.metadata).each { |new_metadatum, metadatum|
         expect(new_metadatum.key).to eq(metadatum.key)
         expect(new_metadatum.value).to eq(metadatum.value)
       }
