@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160415124519) do
+ActiveRecord::Schema.define(version: 20160425123715) do
 
   create_table "material_batches", force: :cascade do |t|
     t.string   "name"
@@ -26,6 +26,14 @@ ActiveRecord::Schema.define(version: 20160415124519) do
 
   add_index "material_batches_materials", ["material_batch_id"], name: "index_material_batches_materials_on_material_batch_id"
   add_index "material_batches_materials", ["material_id"], name: "index_material_batches_materials_on_material_id"
+
+  create_table "material_derivatives", force: :cascade do |t|
+    t.integer "parent_id"
+    t.integer "child_id"
+  end
+
+  add_index "material_derivatives", ["child_id"], name: "index_material_derivatives_on_child_id"
+  add_index "material_derivatives", ["parent_id"], name: "index_material_derivatives_on_parent_id"
 
   create_table "material_types", force: :cascade do |t|
     t.string   "name"

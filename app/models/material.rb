@@ -5,6 +5,8 @@ class Material < ApplicationRecord
   belongs_to              :material_type
   has_and_belongs_to_many :material_batch
   has_many                :metadata
+  has_and_belongs_to_many :children, class_name: 'Material', join_table: 'material_derivatives', foreign_key: :parent_id, association_foreign_key: :child_id
+  has_and_belongs_to_many :parents,  class_name: 'Material', join_table: 'material_derivatives', foreign_key: :child_id,  association_foreign_key: :parent_id
 
   validates :name, presence: true
   validates :uuid, uniqueness: {case_sensitive: false}, uuid: true
