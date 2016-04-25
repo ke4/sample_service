@@ -14,13 +14,20 @@ class Material < ApplicationRecord
 
   after_initialize :generate_uuid, if: "uuid.nil?"
 
+  attr_accessor :expected_parent_uuids
+  validate :expected_parents_match, if: :expected_parent_uuids
+
   def self.build_from_params(params)
     material_type = MaterialType.find_by(material_type_create_params(params))
     metadata = metadata_create_params(params)[:metadata].nil? ? [] : metadata_create_params(params)[:metadata][:data].map { |metadatum| Metadatum.new(metadatum[:attributes]) }
 
+    parent_uuids = parent_create_params(params)[:parents].nil? ? [] : parent_create_params(params)[:parents][:data].map { |parent_param| parent_param[:id] }
+    parents = Material.where(uuid: parent_uuids)
+
     material_params = material_create_params(params)
     material_params[:uuid] = material_params.delete :id
-    Material.new(material_params.merge(material_type: material_type, metadata: metadata))
+
+    Material.new(material_params.merge(material_type: material_type, metadata: metadata, parents: parents, expected_parent_uuids: parent_uuids))
   end
 
   def update_from_params(params)
@@ -83,6 +90,10 @@ class Material < ApplicationRecord
     params.require(:relationships).permit(metadata: {data: [attributes: [:key, :value]]})
   end
 
+  def self.parent_create_params(params)
+    params.require(:relationships).permit(parents: { data: [:id] })
+  end
+
   def material_update_params(params)
     params.permit([:id, attributes: [:name]])
   end
@@ -93,5 +104,9 @@ class Material < ApplicationRecord
 
   def metadata_update_params(params)
     params.permit(relationships: {metadata: {data: [attributes: [:key, :value]]}})
+  end
+
+  def expected_parents_match
+    errors.add :parents, 'must exist' unless expected_parent_uuids == parents.map { |parent| parent.uuid }
   end
 end
