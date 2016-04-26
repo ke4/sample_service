@@ -22,3 +22,5 @@
 en:
   errors:
     invalid_uuid: "is not a valid UUID"
+    cant_be_blank: "can't be blank"
+    cant_add_to_batch: "can't be added to an existing batch"

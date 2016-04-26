@@ -16,7 +16,9 @@ class Material < ApplicationRecord
     material_type = MaterialType.find_by(material_type_create_params(params))
     metadata = metadata_create_params(params)[:metadata].nil? ? [] : metadata_create_params(params)[:metadata][:data].map { |metadatum| Metadatum.new(metadatum[:attributes]) }
 
-    Material.new(material_create_params(params).merge(material_type: material_type, metadata: metadata))
+    material_params = material_create_params(params)
+    material_params[:uuid] = material_params.delete :id
+    Material.new(material_params.merge(material_type: material_type, metadata: metadata))
   end
 
   def update_from_params(params)
@@ -37,7 +39,11 @@ class Material < ApplicationRecord
         end
       end
 
-      self.update((material_update_params(params)[:attributes] or {}).merge(material_type: material_type))
+      material_params = material_update_params(params)
+      if material_params[:id]
+        material_params[:uuid] = material_params.delete :id
+      end
+      self.update((material_params or {}).merge(material_type: material_type))
       self.metadata.each { |metadatum|
         metadatum.save
         metadatum.errors.each { |key|
@@ -64,7 +70,7 @@ class Material < ApplicationRecord
   end
 
   def self.material_create_params(params)
-    params.require(:attributes).permit(:name, :uuid)
+    params.permit([:id, attributes: [:name]])
   end
 
   def self.material_type_create_params(params)
@@ -76,7 +82,7 @@ class Material < ApplicationRecord
   end
 
   def material_update_params(params)
-    params.permit(attributes: [:name, :uuid])
+    params.permit([:id, attributes: [:name]])
   end
 
   def material_type_update_params(params)

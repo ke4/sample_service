@@ -22,13 +22,14 @@ class MaterialBatch < ApplicationRecord
       if material_update_params(params)[:relationships] and material_update_params(params)[:relationships][:materials]
         material_update_params(params)[:relationships][:materials][:data].each { |param|
           if param[:id]
-            material = Material.find(param[:id])
+            material = Material.find_by(uuid: param[:id])
             material.update_from_params(param)
 
             unless self.materials.include? material
-              self.materials << material
+              self.errors.add :materials, I18n.t('errors.cant_add_to_batch')
             end
           else
+            self.errors.add :'materials.id', I18n.t('errors.cant_be_blank')
             material = Material.build_from_params(param)
             self.materials << material
           end
