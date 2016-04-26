@@ -119,6 +119,6 @@ class Material < ApplicationRecord
   end
 
   def expected_parents_match
-    errors.add :parents, 'must exist' unless expected_parent_uuids == parents.map { |parent| parent.uuid }
+    errors.add :parents, I18n.t('errors.messages.doesnt_exist') unless expected_parent_uuids == parents.map { |parent| parent.uuid }
   end
 end

@@ -156,6 +156,63 @@ RSpec.describe "MaterialBatches", type: :request do
       expect(response_json).to include(:'material.name')
       expect(response_json[:'material.name']).to include('can\'t be blank')
     end
+
+    it 'should create materials with parents' do
+      material_batch = build(:material_batch_with_metadata)
+      material_batch.materials.each {|material|
+        material.parents << create(:material)
+      }
+
+      @material_batch_json = {
+          data: {
+              attributes: {
+                  name: material_batch.name
+              },
+              relationships: {
+                  materials: {
+                      data: material_batch.materials.map { |material| {
+                          attributes: {
+                              name: material.name
+                          },
+                          relationships: {
+                              material_type: {
+                                  data: {
+                                      attributes: {
+                                          name: material.material_type.name
+                                      }
+                                  }
+                              },
+                              parents: {
+                                  data: material.parents.map { |parent| {
+                                      id: parent.uuid
+                                  }}
+                              }
+                          }
+                      } }
+                  }
+              }
+          }
+      }
+
+      expect { post_json }.to change  { MaterialBatch.count }.by(1)
+                          .and change { Material.count }.by(3)
+                          .and change { MaterialType.count }.by(0)
+                          .and change { Metadatum.count }.by(0)
+      expect(response).to be_created
+
+      new_material_batch = MaterialBatch.last
+
+      post_response = response
+      get api_v1_material_batch_path(new_material_batch)
+      get_response = response
+      expect(post_response.body).to eq(get_response.body)
+
+      expect(new_material_batch.name).to eq(material_batch.name)
+      expect(new_material_batch.materials.size).to eq(material_batch.materials.size)
+      new_material_batch.materials.zip(material_batch.materials).each { |new_material, material|
+        expect(new_material.parents).to eq(material.parents)
+      }
+    end
   end
 
   describe "PUT #update" do
@@ -380,5 +437,37 @@ RSpec.describe "MaterialBatches", type: :request do
       expect(response_json[:'material.name']).to include('can\'t be blank')
     end
 
+    it 'should update materials with parents' do
+      @material_batch = create(:material_batch)
+      parent = create(:material)
+
+      @material_batch_json = {
+          data: {
+              relationships: {
+                  materials: {
+                      data: @material_batch.materials.map { |material| {
+                        id: material.uuid,
+                        relationships: {
+                            parents: {
+                                data: [
+                                  id: parent.uuid
+                                ]
+                            }
+                        }
+                    }}
+                  }
+              }
+          }
+      }
+
+      update_material_batch
+      expect(response).to be_success
+
+      new_material_batch = MaterialBatch.find(@material_batch.id)
+      expect(new_material_batch.materials).to eq(@material_batch.materials)
+      new_material_batch.materials.each { |material|
+        expect(material.parents).to eq([parent])
+      }
+    end
   end
 end
