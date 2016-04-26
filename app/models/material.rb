@@ -21,7 +21,7 @@ class Material < ApplicationRecord
     material_type = MaterialType.find_by(material_type_create_params(params))
     metadata = metadata_create_params(params)[:metadata].nil? ? [] : metadata_create_params(params)[:metadata][:data].map { |metadatum| Metadatum.new(metadatum[:attributes]) }
 
-    parent_uuids = parent_create_params(params)[:parents].nil? ? [] : parent_create_params(params)[:parents][:data].map { |parent_param| parent_param[:id] }
+    parent_uuids = parents_create_params(params)[:parents].nil? ? [] : parents_create_params(params)[:parents][:data].map { |parent_param| parent_param[:id] }
     parents = Material.where(uuid: parent_uuids)
 
     material_params = material_create_params(params)
@@ -33,7 +33,10 @@ class Material < ApplicationRecord
   def update_from_params(params)
     ActiveRecord::Base.transaction do
       material_type = self.material_type
-      unless material_type_update_params(params)[:relationships].nil? or material_type_update_params(params)[:relationships][:material_type].nil?
+      parents = self.parents
+      parent_uuids = parents.map { |parent| parent.uuid }
+
+      if metadata_update_params(params)[:relationships] and material_type_update_params(params)[:relationships][:material_type]
         material_type = MaterialType.find_by(material_type_update_params(params)[:relationships][:material_type][:data][:attributes])
       end
 
@@ -48,11 +51,16 @@ class Material < ApplicationRecord
         end
       end
 
+      if parents_update_params(params)[:relationships] and parents_update_params(params)[:relationships][:parents]
+        parent_uuids += parents_update_params(params)[:relationships][:parents][:data].map { |parent| parent[:id] }
+        parents = Material.where(uuid: parent_uuids)
+      end
+
       material_params = material_update_params(params)
       if material_params[:id]
         material_params[:uuid] = material_params.delete :id
       end
-      self.update((material_params or {}).merge(material_type: material_type))
+      self.update((material_params or {}).merge(material_type: material_type, parents: parents, expected_parent_uuids: parent_uuids))
       self.metadata.each { |metadatum|
         metadatum.save
         metadatum.errors.each { |key|
@@ -90,7 +98,7 @@ class Material < ApplicationRecord
     params.require(:relationships).permit(metadata: {data: [attributes: [:key, :value]]})
   end
 
-  def self.parent_create_params(params)
+  def self.parents_create_params(params)
     params.require(:relationships).permit(parents: { data: [:id] })
   end
 
@@ -104,6 +112,10 @@ class Material < ApplicationRecord
 
   def metadata_update_params(params)
     params.permit(relationships: {metadata: {data: [attributes: [:key, :value]]}})
+  end
+
+  def parents_update_params(params)
+    params.permit(relationships: {parents: {data: [:id]}})
   end
 
   def expected_parents_match
