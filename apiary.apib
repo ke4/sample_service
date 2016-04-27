@@ -107,56 +107,80 @@ This action response with a list of all materials.
 + Response 200 (application/json)
 
         {
-            "data": [
-                {
-                    "attributes": {
-                        "name": "sample abc"
-                    },
-                    "id": "8b8959b0-e852-0133-db51-005056bf12f5",
-                    "relationships": {
-                        "material-type": {
-                            "data": {
-                                "id": "1",
-                                "type": "material-types"
-                            }
-                        },
-                        "metadata": {
-                            "data": []
-                        }
-                    },
-                    "type": "materials"
-                },
-                {
-                    "attributes": {
-                        "name": "sample def"
-                    },
-                    "id": "aec17ba0-e852-0133-db52-005056bf12f5",
-                    "relationships": {
-                        "material-type": {
-                            "data": {
-                                "id": "1",
-                                "type": "material-types"
-                            }
-                        },
-                        "metadata": {
-                            "data": []
-                        }
-                    },
-                    "type": "materials"
-                }
-            ],
-            "included": [
-                {
-                    "attributes": {
-                        "name": "sample"
-                    },
+          "data": [
+            {
+              "id": "a53a07f0-ee83-0133-bcfa-685b35d4beab",
+              "type": "materials",
+              "attributes": {
+                "name": "sample abc"
+              },
+              "relationships": {
+                "material-type": {
+                  "data": {
                     "id": "1",
-                    "links": {
-                        "self": "/api/v1/material_types/1"
-                    },
                     "type": "material-types"
+                  }
+                },
+                "metadata": {
+                  "data": [
+
+                  ]
+                },
+                "parents": {
+                  "data": [
+
+                  ]
+                },
+                "children": {
+                  "data": [
+
+                  ]
                 }
-            ]
+              }
+            },
+            {
+              "id": "a9186bb0-ee83-0133-bcfb-685b35d4beab",
+              "type": "materials",
+              "attributes": {
+                "name": "sample def"
+              },
+              "relationships": {
+                "material-type": {
+                  "data": {
+                    "id": "1",
+                    "type": "material-types"
+                  }
+                },
+                "metadata": {
+                  "data": [
+
+                  ]
+                },
+                "parents": {
+                  "data": [
+
+                  ]
+                },
+                "children": {
+                  "data": [
+
+                  ]
+                }
+              }
+            }
+          ],
+          "included": [
+            {
+              "id": "1",
+              "type": "material-types",
+              "attributes": {
+                "name": "sample"
+              },
+              "links": {
+                "self": "/api/v1/material_types/1"
+              }
+            }
+          ]
         }
 
 ## Material [/materials/{id}]
@@ -167,38 +191,83 @@ This action response with the queried material data.
 
 + Response 200 (application/json)
 
-        {
-            "data": {
-                "attributes": {
-                    "name": "sample abc"
-                },
-                "id": "8b8959b0-e852-0133-db51-005056bf12f5",
-                "relationships": {
-                    "material-type": {
-                        "data": {
-                            "id": "1",
-                            "type": "material-types"
-                        }
-                    },
-                    "metadata": {
-                        "data": []
-                    }
-                },
-                "type": "materials"
-            },
-            "included": [
-                {
-                    "attributes": {
-                        "name": "sample"
-                    },
-                    "id": "1",
-                    "links": {
-                        "self": "/api/v1/material_types/1"
-                    },
-                    "type": "material-types"
-                }
-            ]
-        }
+       {
+         "data": {
+           "id": "75ed7330-ee86-0133-bcfd-685b35d4beab",
+           "type": "materials",
+           "attributes": {
+             "name": "library 123"
+           },
+           "relationships": {
+             "material-type": {
+               "data": {
+                 "id": "2",
+                 "type": "material-types"
+               }
+             },
+             "metadata": {
+               "data": [
+                 {
+                   "id": "4",
+                   "type": "metadata"
+                 },
+                 {
+                   "id": "5",
+                   "type": "metadata"
+                 }
+               ]
+             },
+             "parents": {
+               "data": [
+                 {
+                   "id": "a53a07f0-ee83-0133-bcfa-685b35d4beab",
+                   "type": "materials"
+                 },
+                 {
+                   "id": "a9186bb0-ee83-0133-bcfb-685b35d4beab",
+                   "type": "materials"
+                 }
+               ]
+             },
+             "children": {
+               "data": [
+                 {
+                   "id": "109ec470-ee87-0133-bcff-685b35d4beab",
+                   "type": "materials"
+                 }
+               ]
+             }
+           }
+         },
+         "included": [
+           {
+             "id": "2",
+             "type": "material-types",
+             "attributes": {
+               "name": "library"
+             },
+             "links": {
+               "self": "/api/v1/material_types/2"
+             }
+           },
+           {
+             "id": "4",
+             "type": "metadata",
+             "attributes": {
+               "key": "gender",
+               "value": "female"
+             }
+           },
+           {
+             "id": "5",
+             "type": "metadata",
+             "attributes": {
+               "key": "taxon_id",
+               "value": "9876"
+             }
+           }
+         ]
+       }
 
 ## Material creation and update [/materials/{id} POST]
 
@@ -235,36 +304,50 @@ It is optional to the material to has one or more metadata relationship(s).
 
     + Body
 
-            {
+        {
+          "data": {
+            "id": "a9186bb0-ee83-0133-bcfb-685b35d4beab",
+            "type": "materials",
+            "attributes": {
+              "name": "sample def"
+            },
+            "relationships": {
+              "material-type": {
                 "data": {
-                    "id": "aec17ba0-e852-0133-db52-005056bf12f5",
-                    "type": "materials",
-                    "attributes": {
-                        "name": "sample def"
-                    },
-                    "relationships": {
-                        "material-type": {
-                            "data": {
-                                "id": "1",
-                                "type": "material-types"
-                            }
-                        },
-                        "metadata": {
-                            "data": []
-                        }
-                    }
-                },
-                "included": [{
-                    "id": "1",
-                    "type": "material-types",
-                    "attributes": {
-                        "name": "sample"
-                    },
-                    "links": {
-                        "self": "/api/v1/material_types/1"
-                    }
-                }]
+                  "id": "1",
+                  "type": "material-types"
+                }
+              },
+              "metadata": {
+                "data": [
+
+                ]
+              },
+              "parents": {
+                "data": [
+
+                ]
+              },
+              "children": {
+                "data": [
+
+                ]
+              }
             }
+          },
+          "included": [
+            {
+              "id": "1",
+              "type": "material-types",
+              "attributes": {
+                "name": "sample"
+              },
+              "links": {
+                "self": "/api/v1/material_types/1"
+              }
+            }
+          ]
+        }
             
 ### Create a new Material with attached metadata [POST]
 
@@ -307,67 +390,168 @@ It is optional to the material to has one or more metadata relationship(s).
 
     + Headers
 
-            Location: /materials/3
+            Location: /materials/37ad1d10-ee85-0133-bcfc-685b35d4beab
 
     + Body
 
-            {
+        {
+          "data": {
+            "id": "37ad1d10-ee85-0133-bcfc-685b35d4beab",
+            "type": "materials",
+            "attributes": {
+              "name": "library 123"
+            },
+            "relationships": {
+              "material-type": {
                 "data": {
-                    "attributes": {
-                        "name": "library 123"
-                    },
-                    "id": "922c3940-e863-0133-db53-005056bf12f5",
-                    "relationships": {
-                        "material-type": {
-                            "data": {
-                                "id": "2",
-                                "type": "material-types"
+                  "id": "2",
+                  "type": "material-types"
+                }
+              },
+              "metadata": {
+                "data": [
+                  {
+                    "id": "2",
+                    "type": "metadata"
+                  },
+                  {
+                    "id": "3",
+                    "type": "metadata"
+                  }
+                ]
+              },
+              "parents": {
+                "data": [
+
+                ]
+              },
+              "children": {
+                "data": [
+
+                ]
+              }
+            }
+          },
+          "included": [
+            {
+              "id": "2",
+              "type": "material-types",
+              "attributes": {
+                "name": "library"
+              },
+              "links": {
+                "self": "/api/v1/material_types/2"
+              }
+            },
+            {
+              "id": "2",
+              "type": "metadata",
+              "attributes": {
+                "key": "gender",
+                "value": "female"
+              }
+            },
+            {
+              "id": "3",
+              "type": "metadata",
+              "attributes": {
+                "key": "taxon_id",
+                "value": "5678"
+              }
+            }
+          ]
+        }
+
+### Create a new Material with parent materials [POST]
+
++ Request (application/vnd.api+json)
+
+        {
+            "data": {
+                "attributes": {
+                    "name": "library 123"
+                },
+                "relationships": {
+                    "material_type": {
+                        "data": {
+                            "attributes": {
+                                "name": "library"
                             }
-                        },
-                        "metadata": {
-                            "data": [
-                                {
-                                    "id": "1",
-                                    "type": "metadata"
-                                },
-                                {
-                                    "id": "2",
-                                    "type": "metadata"
-                                }
-                            ]
                         }
                     },
-                    "type": "materials"
-                },
-                "included": [
-                    {
-                        "attributes": {
-                            "name": "library"
-                        },
-                        "id": "2",
-                        "links": {
-                            "self": "/api/v1/material_types/2"
-                        },
-                        "type": "material-types"
-                    },
-                    {
-                        "attributes": {
-                            "key": "gender",
-                            "value": "female"
-                        },
-                        "id": "1",
-                        "type": "metadata"
-                    },
-                    {
-                        "attributes": {
-                            "key": "taxon_id",
-                            "value": "5678"
-                        },
-                        "id": "2",
-                        "type": "metadata"
+                    "parents": {
+                        "data": [
+                            {
+                                "id": "a53a07f0-ee83-0133-bcfa-685b35d4beab"
+                            },
+                            {
+                                "id": "a9186bb0-ee83-0133-bcfb-685b35d4beab"
+                            }
+                        ]
                     }
-                ]
+                }
             }
+        }
+
++ Response 201 (application/vnd.api+json)
+
+    + Headers
+
+            Location: /materials/75ed7330-ee86-0133-bcfd-685b35d4beab
+
+    + Body
+
+        {
+          "data": {
+            "id": "75ed7330-ee86-0133-bcfd-685b35d4beab",
+            "type": "materials",
+            "attributes": {
+              "name": "library 123"
+            },
+            "relationships": {
+              "material-type": {
+                "data": {
+                  "id": "2",
+                  "type": "material-types"
+                }
+              },
+              "metadata": {
+                "data": [
+
+                ]
+              },
+              "parents": {
+                "data": [
+                  {
+                    "id": "a53a07f0-ee83-0133-bcfa-685b35d4beab",
+                    "type": "materials"
+                  },
+                  {
+                    "id": "a9186bb0-ee83-0133-bcfb-685b35d4beab",
+                    "type": "materials"
+                  }
+                ]
+              },
+              "children": {
+                "data": [
+
+                ]
+              }
+            }
+          },
+          "included": [
+            {
+              "id": "2",
+              "type": "material-types",
+              "attributes": {
+                "name": "library"
+              },
+              "links": {
+                "self": "/api/v1/material_types/2"
+              }
+            }
+          ]
+        }
             
 ### Update an existing Material with modified name, material type and metadata [PUT]
 
@@ -406,64 +590,80 @@ It is optional to the material to has one or more metadata relationship(s).
             }
         }
 
-+ Response 201 (application/vnd.api+json)
++ Response 200 (application/vnd.api+json)
 
     + Headers
 
-            Location: /materials/3
+            Location: /materials/37ad1d10-ee85-0133-bcfc-685b35d4beab
 
     + Body
 
             {
-                "data": {
-                    "id": "922c3940-e863-0133-db53-005056bf12f5",
-                    "type": "materials",
-                    "attributes": {
-                        "name": "sample 123"
-                    },
-                    "relationships": {
-                        "material-type": {
-                            "data": {
-                                "id": "1",
-                                "type": "material-types"
-                            }
-                        },
-                        "metadata": {
-                            "data": [{
-                                "id": "1",
-                                "type": "metadata"
-                            }, {
-                                "id": "2",
-                                "type": "metadata"
-                            }]
-                        }
-                    }
+              "data": {
+                "id": "37ad1d10-ee85-0133-bcfc-685b35d4beab",
+                "type": "materials",
+                "attributes": {
+                  "name": "sample 123"
                 },
-                "included": [{
-                    "id": "1",
-                    "type": "material-types",
-                    "attributes": {
-                        "name": "sample"
-                    },
-                    "links": {
-                        "self": "/api/v1/material_types/1"
+                "relationships": {
+                  "material-type": {
+                    "data": {
+                      "id": "1",
+                      "type": "material-types"
                     }
-                }, {
-                    "id": "1",
-                    "type": "metadata",
-                    "attributes": {
-                        "key": "gender",
-                        "value": "male"
-                    }
-                }, {
-                    "id": "2",
-                    "type": "metadata",
-                    "attributes": {
-                        "key": "taxon_id",
-                        "value": "1234"
-                    }
-                }]
-            
+                  },
+                  "metadata": {
+                    "data": [
+                      {
+                        "id": "2",
+                        "type": "metadata"
+                      },
+                      {
+                        "id": "3",
+                        "type": "metadata"
+                      }
+                    ]
+                  },
+                  "parents": {
+                    "data": [
+
+                    ]
+                  },
+                  "children": {
+                    "data": [
+
+                    ]
+                  }
+                }
+              },
+              "included": [
+                {
+                  "id": "1",
+                  "type": "material-types",
+                  "attributes": {
+                    "name": "sample"
+                  },
+                  "links": {
+                    "self": "/api/v1/material_types/1"
+                  }
+                },
+                {
+                  "id": "2",
+                  "type": "metadata",
+                  "attributes": {
+                    "key": "gender",
+                    "value": "male"
+                  }
+                },
+                {
+                  "id": "3",
+                  "type": "metadata",
+                  "attributes": {
+                    "key": "taxon_id",
+                    "value": "1234"
+                  }
+                }
+              ]
             }
 
 ## MaterialBatch Collection [/material_batches]
