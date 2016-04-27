@@ -901,6 +901,9 @@ describe Api::V1::MaterialsController, type: :request do
       new_material = Material.find(@material.id)
 
       expect(new_material.parents).to eq(@material.parents + parents)
+      new_material.parents.each {|parent|
+        expect(parent.children).to eq([@material])
+      }
     end
 
     it 'should keep old parents if none given' do
