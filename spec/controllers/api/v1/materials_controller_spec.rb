@@ -56,6 +56,38 @@ describe Api::V1::MaterialsController, type: :request do
       validate_material_with_metadata(material_json[:data], material)
       validate_included_metadata(material_json[:included].select { |obj| obj[:type] == 'metadata' }, material.metadata)
     end
+
+    it 'should return a serialized material instance with parents' do
+      material = create(:material_with_parents)
+
+      get api_v1_material_path(material.uuid)
+      expect(response).to be_success
+
+      material_json = JSON.parse(response.body, symbolize_names: true)
+
+      parents_relationship = material_json[:data][:relationships][:parents][:data]
+      expect(parents_relationship.size).to eq(3)
+
+      parents_relationship.zip(material.parents).each { |parent_json, parent|
+        expect(parent_json[:id]).to eq(parent.uuid)
+      }
+    end
+
+    it 'should return a serialized material instance with children' do
+      material = create(:material_with_children)
+
+      get api_v1_material_path(material.uuid)
+      expect(response).to be_success
+
+      material_json = JSON.parse(response.body, symbolize_names: true)
+
+      children_relationship = material_json[:data][:relationships][:children][:data]
+      expect(children_relationship.size).to eq(3)
+
+      children_relationship.zip(material.children).each { |child_json, child|
+        expect(child_json[:id]).to eq(child.uuid)
+      }
+    end
   end
 
   describe "GET #index" do
@@ -382,6 +414,79 @@ describe Api::V1::MaterialsController, type: :request do
 
       expect(response_json).to include(:'metadatum.key')
       expect(response_json[:'metadatum.key']).to include('can\'t be blank')
+    end
+
+    it 'should set material parents if given' do
+      material = build(:material, parents: create_list(:material, 3))
+
+      @material_json = {
+          data: {
+              attributes: {
+                  name: material.name
+              },
+              relationships: {
+                  material_type: {
+                      data: {
+                          attributes: {
+                              name: material.material_type.name
+                          }
+                      }
+                  },
+                  parents: {
+                      data: material.parents.map { |parent| {
+                          id: parent.uuid
+                      }}
+                  }
+              }
+          }
+      }
+
+      expect { post_json }.to change { Material.count }.by(1)
+      expect(response).to be_success
+
+      new_material = Material.last
+      expect(new_material.name).to eq(material.name)
+      expect(new_material.parents.size).to eq(material.parents.size)
+      expect(new_material.parents).to eq(material.parents)
+
+      post_response = response
+      get api_v1_material_path(new_material.uuid)
+      get_response = response
+
+      expect(post_response.body).to eq(get_response.body)
+    end
+
+    it 'should fail when parent uuid does not exist' do
+      material = build(:material, parents: build_list(:material, 3))
+
+      @material_json = {
+          data: {
+              attributes: {
+                  name: material.name
+              },
+              relationships: {
+                  material_type: {
+                      data: {
+                          attributes: {
+                              name: material.material_type.name
+                          }
+                      }
+                  },
+                  parents: {
+                      data: material.parents.map { |parent| {
+                          id: parent.uuid
+                      }}
+                  }
+              }
+          }
+      }
+
+      expect { post_json }.to change { Material.count }.by(0)
+      expect(response).to be_unprocessable
+
+      response_json = JSON.parse(response.body, symbolize_names: true)
+      expect(response_json).to include(:parents)
+      expect(response_json[:parents]).to include 'must exist'
     end
   end
 
@@ -738,6 +843,120 @@ describe Api::V1::MaterialsController, type: :request do
         expect(new_metadatum.key).to eq(metadatum.key)
         expect(new_metadatum.value).to eq(metadatum.value)
       }
+    end
+
+    it 'should add parents to a material' do
+      @material = create(:material)
+      parents = create_list(:material, 3)
+
+      @material_json = {
+          data: {
+              relationships: {
+                  parents: {
+                      data: parents.map { |parent| {
+                          id: parent.uuid
+                      }}
+                  }
+              }
+          }
+      }
+
+      update_material
+      expect(response).to be_success
+
+      put_response = response
+      get api_v1_material_path(@material.uuid)
+      get_json = response
+      expect(put_response.body).to eq(get_json.body)
+
+      new_material = Material.find(@material.id)
+
+      expect(new_material.parents).to eq(parents)
+    end
+
+    it 'should append new parents to the existing array' do
+      @material = create(:material_with_parents)
+      parents = create_list(:material, 3)
+
+      @material_json = {
+          data: {
+              relationships: {
+                  parents: {
+                      data: parents.map { |parent| {
+                          id: parent.uuid
+                      }}
+                  }
+              }
+          }
+      }
+
+      update_material
+      expect(response).to be_success
+
+      put_response = response
+      get api_v1_material_path(@material.uuid)
+      get_json = response
+      expect(put_response.body).to eq(get_json.body)
+
+      new_material = Material.find(@material.id)
+
+      expect(new_material.parents).to eq(@material.parents + parents)
+      new_material.parents.each {|parent|
+        expect(parent.children).to eq([@material])
+      }
+    end
+
+    it 'should keep old parents if none given' do
+      @material = create(:material_with_parents)
+
+      @material_json = {
+          data: {
+              relationships: {
+                  parents: {
+                      data: []
+                  }
+              }
+          }
+      }
+
+      update_material
+      expect(response).to be_success
+
+      put_response = response
+      get api_v1_material_path(@material.uuid)
+      get_json = response
+      expect(put_response.body).to eq(get_json.body)
+
+      new_material = Material.find(@material.id)
+
+      expect(new_material.parents).to eq(@material.parents)
+    end
+
+    it 'should fail and rollback if parent don\'t exist' do
+      @material = create(:material_with_parents)
+      parents = build_list(:material, 3)
+
+      @material_json = {
+          data: {
+              relationships: {
+                  parents: {
+                      data: parents.map { |parent| {
+                          id: parent.uuid
+                      }}
+                  }
+              }
+          }
+      }
+
+      update_material
+      expect(response).to be_unprocessable
+      response_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response_json).to include(:parents)
+      expect(response_json[:parents]).to include('must exist')
+
+      new_material = Material.find(@material.id)
+      expect(new_material.parents).to eq(@material.parents)
     end
   end
 end

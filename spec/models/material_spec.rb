@@ -39,4 +39,15 @@ RSpec.describe Material, type: :model do
     expect(build(:material, uuid: uuid_param)).to_not be_valid
   end
 
+  it 'should be able to have child materials' do
+    material = build(:material_with_children)
+    expect(material).to be_valid
+    expect(material.children.size).to eq(3)
+  end
+
+  it 'should be able to have parent materials' do
+    material = build(:material_with_parents)
+    expect(material).to be_valid
+    expect(material.parents.size).to eq(3)
+  end
 end

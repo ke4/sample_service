@@ -26,10 +26,10 @@ class MaterialBatch < ApplicationRecord
             material.update_from_params(param)
 
             unless self.materials.include? material
-              self.errors.add :materials, I18n.t('errors.cant_add_to_batch')
+              self.errors.add :materials, I18n.t('errors.messages.add_to_batch')
             end
           else
-            self.errors.add :'materials.id', I18n.t('errors.cant_be_blank')
+            self.errors.add :'materials.id', I18n.t('errors.messages.blank')
             material = Material.build_from_params(param)
             self.materials << material
           end
