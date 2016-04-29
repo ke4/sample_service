@@ -1,72 +1,18 @@
 class MaterialBatch < ApplicationRecord
-  has_and_belongs_to_many :materials
+  has_many :material_batches_materials
+  has_many :materials, through: :material_batches_materials
 
-  validates :materials, presence: true, gather_attribute_errors: true
+  validates :materials, presence: true
+  validate :check_materials_added, if: '!materials_added.nil?'
+  attr_accessor :materials_added
 
-  def self.build_from_params(params)
-    material_batch = MaterialBatch.new(material_batch_create_params(params))
-
-    material_batch.materials = material_create_params(params).map { |param|
-      Material.build_from_params(param)
-    }
-
-    material_batch
-  end
-
-  def update_from_params(params)
-    ActiveRecord::Base.transaction do
-      if material_batch_update_params(params)[:attributes]
-        self.update(material_batch_update_params(params)[:attributes])
-      end
-
-      if material_update_params(params)[:relationships] and material_update_params(params)[:relationships][:materials]
-        material_update_params(params)[:relationships][:materials][:data].each { |param|
-          if param[:id]
-            material = Material.find_by(uuid: param[:id])
-            material.update_from_params(param)
-
-            unless self.materials.include? material
-              self.errors.add :materials, I18n.t('errors.messages.add_to_batch')
-            end
-          else
-            self.errors.add :'materials.id', I18n.t('errors.messages.blank')
-            material = Material.build_from_params(param)
-            self.materials << material
-          end
-          material.errors.each { |key|
-            material.errors[key].each { |error|
-              self.errors.add("material.#{key}", error)
-            }
-          }
-        }
-      end
-
-      if self.errors.empty?
-        return true
-      else
-        raise ActiveRecord::Rollback
-      end
-    end
-
-    false
-  end
+  accepts_nested_attributes_for :materials
 
   private
 
-  # Only allow a trusted parameter "white list" through.
-  def self.material_batch_create_params(params)
-    params.require(:data).require(:attributes).permit(:name)
-  end
-
-  def self.material_create_params(params)
-    params.require(:data).require(:relationships).require(:materials).require(:data)
-  end
-
-  def material_batch_update_params(params)
-    params.require(:data).permit(attributes: [:name])
-  end
-
-  def material_update_params(params)
-    params.require(:data).permit!
+  def check_materials_added
+    if materials_added > 0
+      errors.add :materials, I18n.t('errors.messages.add_to_batch')
+    end
   end
 end
