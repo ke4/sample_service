@@ -1,5 +1,6 @@
 class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
   before_action :set_material_batch, only: [:show, :update]
+  include MaterialParametersHelper
 
   # GET /material_batches
   def index
@@ -51,7 +52,7 @@ class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
         material_batch_json_params[:data][:relationships][:materials][:data]
       material_batch_json_params[:data][:relationships][:materials][:data].each { |material_json|
         material = material_json[:id] ? Material.find_by(uuid: material_json[:id]) : nil
-        material_params = Material.material_params(material, material_json).merge(id: material ? material.id : nil)
+        material_params = build_material_params(material, material_json).merge(id: material ? material.id : nil)
 
         if @material_batch
           if @material_batch.materials.include? material
@@ -78,7 +79,7 @@ class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
             :name
         ],
         relationships: {
-            materials: Material.json_schema
+            materials: material_json_schema
         }
     })
   end

@@ -1,5 +1,6 @@
 class Api::V1::MaterialsController < Api::V1::ApplicationController
   before_action :set_material, only: [:show, :update]
+  include MaterialParametersHelper
 
   # GET /materials
   def index
@@ -42,11 +43,11 @@ class Api::V1::MaterialsController < Api::V1::ApplicationController
 
   # Only allow a trusted parameter "white list" through.
   def material_params
-    Material.material_params(@material, material_json_params[:data])
+    build_material_params(@material, material_json_params[:data])
   end
 
   def material_json_params
-    params.permit(Material.json_schema)
+    params.permit(material_json_schema)
   end
 
   def includes
