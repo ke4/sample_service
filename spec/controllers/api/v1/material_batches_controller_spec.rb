@@ -153,8 +153,8 @@ RSpec.describe "MaterialBatches", type: :request do
       expect(response).to be_unprocessable
       response_json = JSON.parse(response.body, symbolize_names: true)
 
-      expect(response_json).to include(:'material.name')
-      expect(response_json[:'material.name']).to include('can\'t be blank')
+      expect(response_json).to include(:'materials.name')
+      expect(response_json[:'materials.name']).to include('can\'t be blank')
     end
 
     it 'should create materials with parents' do
@@ -212,6 +212,42 @@ RSpec.describe "MaterialBatches", type: :request do
       new_material_batch.materials.zip(material_batch.materials).each { |new_material, material|
         expect(new_material.parents).to eq(material.parents)
       }
+    end
+
+    it 'should create a material_batch with existing materials' do
+      material_batch = build(:material_batch, materials: create_list(:material, 3))
+
+      @material_batch_json = {
+          data: {
+              attributes: {
+                  name: material_batch.name
+              },
+              relationships: {
+                  materials: {
+                      data: material_batch.materials.map { |material| {
+                          id: material.uuid
+                      }}
+                  }
+              }
+          }
+      }
+
+      expect { post_json }.to change  { MaterialBatch.count }.by(1)
+                                  .and change { Material.count }.by(0)
+                                           .and change { MaterialType.count }.by(0)
+                                                    .and change { Metadatum.count }.by(0)
+      expect(response).to be_created
+
+      new_material_batch = MaterialBatch.last
+
+      post_response = response
+      get api_v1_material_batch_path(new_material_batch)
+      get_response = response
+      expect(post_response.body).to eq(get_response.body)
+
+      expect(new_material_batch.name).to eq(material_batch.name)
+      expect(new_material_batch.materials.size).to eq(material_batch.materials.size)
+      expect(new_material_batch.materials).to eq(material_batch.materials)
     end
   end
 
@@ -386,8 +422,8 @@ RSpec.describe "MaterialBatches", type: :request do
       expect(response).to be_unprocessable
       response_json = JSON.parse(response.body, symbolize_names: true)
 
-      expect(response_json).to include(:'materials.id')
-      expect(response_json[:'materials.id']).to include('can\'t be blank')
+      expect(response_json).to include(:'materials')
+      expect(response_json[:'materials']).to include('can\'t be added to an existing batch')
     end
 
     it 'should rollback completely if invalid' do
@@ -433,8 +469,8 @@ RSpec.describe "MaterialBatches", type: :request do
         expect(old_material.name).to eq(persisted_material.name)
       }
 
-      expect(response_json).to include(:'material.name')
-      expect(response_json[:'material.name']).to include('can\'t be blank')
+      expect(response_json).to include(:'materials.name')
+      expect(response_json[:'materials.name']).to include('can\'t be blank')
     end
 
     it 'should update materials with parents' do

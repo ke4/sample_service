@@ -15,7 +15,7 @@ class Api::V1::MaterialsController < Api::V1::ApplicationController
 
   # POST /materials
   def create
-    @material = Material.build_from_params(material_params)
+    @material = Material.new(material_params)
 
     if @material.save
       render json: @material, status: :created, include: includes
@@ -26,7 +26,7 @@ class Api::V1::MaterialsController < Api::V1::ApplicationController
 
   # PATCH/PUT /materials/1
   def update
-    if @material.update_from_params(material_params)
+    if @material.update(material_params)
       render json: @material, include: includes
     else
       render json: @material.errors, status: :unprocessable_entity
@@ -42,7 +42,11 @@ class Api::V1::MaterialsController < Api::V1::ApplicationController
 
   # Only allow a trusted parameter "white list" through.
   def material_params
-    params.require(:data)
+    Material.material_params(@material, material_json_params[:data])
+  end
+
+  def material_json_params
+    params.permit(Material.json_schema)
   end
 
   def includes

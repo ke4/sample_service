@@ -141,7 +141,7 @@ describe Api::V1::MaterialsController, type: :request do
       post api_v1_materials_path, params: @material_json.to_json, headers: headers
     }
 
-    let(:check_reponse_is_same) {
+    let(:check_response_is_same) {
       expect(response).to be_created
       post_response = response
       get api_v1_material_path(Material.last.uuid)
@@ -179,7 +179,7 @@ describe Api::V1::MaterialsController, type: :request do
       expect(new_material.uuid.length).to eq(36)
       expect(new_material.metadata).to be_empty
 
-      check_reponse_is_same
+      check_response_is_same
     end
 
     it "should create a material instance when a UUID is provided" do
@@ -210,7 +210,7 @@ describe Api::V1::MaterialsController, type: :request do
       new_material = Material.last
       expect(new_material.uuid).to eq(material.uuid)
 
-      check_reponse_is_same
+      check_response_is_same
     end
 
     it 'should return an error if posting an invalid uuid' do
@@ -412,8 +412,8 @@ describe Api::V1::MaterialsController, type: :request do
       expect(response).to be_unprocessable
       response_json = JSON.parse(response.body, symbolize_names: true)
 
-      expect(response_json).to include(:'metadatum.key')
-      expect(response_json[:'metadatum.key']).to include('can\'t be blank')
+      expect(response_json).to include(:'metadata.key')
+      expect(response_json[:'metadata.key']).to include('can\'t be blank')
     end
 
     it 'should set material parents if given' do
@@ -832,8 +832,8 @@ describe Api::V1::MaterialsController, type: :request do
       expect(response).to be_unprocessable
       response_json = JSON.parse(response.body, symbolize_names: true)
 
-      expect(response_json).to include(:'metadatum.key')
-      expect(response_json[:'metadatum.key']).to include('can\'t be blank')
+      expect(response_json).to include(:'metadata.key')
+      expect(response_json[:'metadata.key']).to include('can\'t be blank')
 
       new_material = Material.find(@material.id)
 
