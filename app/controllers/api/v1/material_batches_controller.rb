@@ -18,7 +18,8 @@ class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
   def create
     @material_batch = MaterialBatch.new(material_batch_params)
 
-    if @material_batch.save
+    if @material_batch.bulk_save
+      set_material_batch_by_id(@material_batch.id)
       render json: @material_batch, status: :created, include: includes
     else
       render json: @material_batch.errors, status: :unprocessable_entity
@@ -28,6 +29,7 @@ class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
   # PATCH/PUT /material_batches/1
   def update
     if @material_batch.update(material_batch_params)
+      set_material_batch_by_id(@material_batch.id)
       render json: @material_batch, include: includes
     else
       render json: @material_batch.errors, status: :unprocessable_entity
@@ -37,7 +39,11 @@ class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
   private
   # Use callbacks to share common setup or constraints between actions.
   def set_material_batch
-    @material_batch = MaterialBatch.find(params[:id])
+    @material_batch = set_material_batch_by_id(params[:id])
+  end
+
+  def set_material_batch_by_id(id)
+    @material_batch = MaterialBatch.includes(materials: [:metadata, :material_type, :parents, :children]).find(id)
   end
 
   def material_batch_params

@@ -31,6 +31,6 @@ RSpec.describe Metadatum, type: :model do
     metadatum_1 = create(:metadatum, key: 'key_1', material: material)
    
     metadatum_2 = build(:metadatum, key: 'key_1', material: material)
-    expect(metadatum_2).to_not be_valid
+    expect { metadatum_2.save }.to raise_error(ActiveRecord::RecordNotUnique)
   end
 end

@@ -38,7 +38,11 @@ module MaterialParametersHelper
       parent_uuids += material_json_params[:relationships][:parents][:data].map { |parent| parent[:id] }
     end
 
-    params.merge(material_type: material_type, metadata_attributes: metadata, parents: Material.where(uuid: parent_uuids), expected_parent_uuids: parent_uuids)
+    unless parent_uuids.empty?
+      params = params.merge(parents: Material.where(uuid: parent_uuids), expected_parent_uuids: parent_uuids)
+    end
+
+    params.merge(material_type: material_type, metadata_attributes: metadata)
   end
 
   def material_json_schema

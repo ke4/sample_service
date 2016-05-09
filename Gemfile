@@ -27,6 +27,8 @@ gem 'active_model_serializers', '~> 0.10.0.rc4'
 #gem 'activeuuid'
 gem 'uuid'
 
+gem 'activerecord-import'
+
 group :test do
   gem 'rspec-rails', '~> 3.5.0.beta3'
   gem 'factory_girl_rails'

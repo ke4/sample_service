@@ -106,6 +106,14 @@ RSpec.describe "MaterialBatches", type: :request do
 
       expect(new_material_batch.name).to eq(material_batch.name)
       expect(new_material_batch.materials.size).to eq(material_batch.materials.size)
+      new_material_batch.materials.zip(material_batch.materials).each { |new_material, material|
+        expect(new_material.material_type).to eq(material.material_type)
+        expect(new_material.metadata.size).to eq(material.metadata.size)
+        new_material.metadata.zip(material.metadata).each { |new_metadata, metadata|
+          expect(new_metadata.key).to eq(metadata.key)
+          expect(new_metadata.value).to eq(metadata.value)
+        }
+      }
     end
 
     it 'should not save anything to the database if invalid' do

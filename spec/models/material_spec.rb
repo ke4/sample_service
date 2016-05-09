@@ -16,7 +16,9 @@ RSpec.describe Material, type: :model do
   end
 
   it "should have a valid UUID value" do
-    expect(Material.new.uuid).to match(/^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i)
+    material = Material.new
+    material.valid?
+    expect(material.uuid).to match(/^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i)
   end
 
   it "should be invalid without a material type" do

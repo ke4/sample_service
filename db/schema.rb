@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160425123715) do
+ActiveRecord::Schema.define(version: 20160505142710) do
 
   create_table "material_batches", force: :cascade do |t|
     t.string   "name"
@@ -54,7 +54,7 @@ ActiveRecord::Schema.define(version: 20160425123715) do
   end
 
   add_index "materials", ["material_type_id"], name: "index_materials_on_material_type_id"
-  add_index "materials", ["uuid"], name: "index_materials_on_uuid"
+  add_index "materials", ["uuid"], name: "index_materials_on_uuid", unique: true
 
   create_table "metadata", force: :cascade do |t|
     t.string   "key"
@@ -64,6 +64,7 @@ ActiveRecord::Schema.define(version: 20160425123715) do
     t.datetime "updated_at",  null: false
   end
 
+  add_index "metadata", ["key", "material_id"], name: "index_metadata_on_key_and_material_id", unique: true
   add_index "metadata", ["material_id"], name: "index_metadata_on_material_id"
 
 end

@@ -6,13 +6,17 @@ class Material < ApplicationRecord
   has_many :material_batches_materials
   has_many :material_batches, through: :material_batches_materials
   has_many :metadata, inverse_of: :material
-  has_and_belongs_to_many :children, class_name: 'Material', join_table: 'material_derivatives', foreign_key: :parent_id, association_foreign_key: :child_id
-  has_and_belongs_to_many :parents, class_name: 'Material', join_table: 'material_derivatives', foreign_key: :child_id, association_foreign_key: :parent_id
+
+  has_many :parent_derivatives, class_name: 'MaterialDerivative', foreign_key: 'child_id', inverse_of: :child
+  has_many :parents, through: :parent_derivatives
+
+  has_many :child_derivatives, class_name: 'MaterialDerivative', foreign_key: 'parent_id', inverse_of: :parent
+  has_many :children, through: :child_derivatives
 
   validates :name, presence: true
-  validates :uuid, uniqueness: {case_sensitive: false}, uuid: true
+  validates :uuid, uuid: true, uniqueness: {case_sensitive: false}, unless: 'uuid.nil?'
 
-  after_initialize :generate_uuid, if: "uuid.nil?"
+  after_validation :generate_uuid, if: "uuid.nil?"
 
   attr_accessor :expected_parent_uuids
   validate :expected_parents_match, if: :expected_parent_uuids
