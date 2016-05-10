@@ -14,4 +14,9 @@ RSpec.describe MaterialType, type: :model do
   it "should be invalid with a blank name" do
     expect(build(:material_type, name: '')).to_not be_valid
   end
+
+  it 'should be invalid without a unique name' do
+    material_type = create(:material_type)
+    expect(build(:material_type, name: material_type.name)).to_not be_valid
+  end
 end
