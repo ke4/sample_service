@@ -28,7 +28,7 @@ class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
 
   # PATCH/PUT /material_batches/1
   def update
-    if @material_batch.update(material_batch_params)
+    if @material_batch.bulk_update(material_batch_params)
       set_material_batch_by_id(@material_batch.id)
       render json: @material_batch, include: includes
     else
