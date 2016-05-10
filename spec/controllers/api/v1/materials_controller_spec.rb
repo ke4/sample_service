@@ -184,6 +184,7 @@ describe Api::V1::MaterialsController, type: :request do
 
     it "should create a material instance when a UUID is provided" do
       material = build(:material, material_type: create(:material_type))
+      material.valid?
 
       @material_json = {
           data: {

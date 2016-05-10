@@ -3,5 +3,5 @@
 class Metadatum < ApplicationRecord
   belongs_to :material, inverse_of: :metadata
 
-  validates :key, presence: true, uniqueness: { scope: :material }
+  validates :key, presence: true
 end

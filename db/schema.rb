@@ -11,41 +11,41 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160425123715) do
+ActiveRecord::Schema.define(version: 20160505142710) do
 
-  create_table "material_batches", force: :cascade do |t|
+  create_table "material_batches", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
-  create_table "material_batches_materials", id: false, force: :cascade do |t|
+  create_table "material_batches_materials", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.integer  "material_id"
     t.integer  "material_batch_id"
     t.datetime "created_at",        null: false
     t.datetime "updated_at",        null: false
   end
 
-  add_index "material_batches_materials", ["material_batch_id"], name: "index_material_batches_materials_on_material_batch_id"
-  add_index "material_batches_materials", ["material_id"], name: "index_material_batches_materials_on_material_id"
+  add_index "material_batches_materials", ["material_batch_id"], name: "index_material_batches_materials_on_material_batch_id", using: :btree
+  add_index "material_batches_materials", ["material_id"], name: "index_material_batches_materials_on_material_id", using: :btree
 
-  create_table "material_derivatives", force: :cascade do |t|
+  create_table "material_derivatives", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.integer  "parent_id"
     t.integer  "child_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
-  add_index "material_derivatives", ["child_id"], name: "index_material_derivatives_on_child_id"
-  add_index "material_derivatives", ["parent_id"], name: "index_material_derivatives_on_parent_id"
+  add_index "material_derivatives", ["child_id"], name: "index_material_derivatives_on_child_id", using: :btree
+  add_index "material_derivatives", ["parent_id"], name: "index_material_derivatives_on_parent_id", using: :btree
 
-  create_table "material_types", force: :cascade do |t|
+  create_table "material_types", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
-  create_table "materials", force: :cascade do |t|
+  create_table "materials", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.integer  "material_type_id"
     t.string   "uuid",             limit: 36
     t.string   "name"
@@ -53,10 +53,10 @@ ActiveRecord::Schema.define(version: 20160425123715) do
     t.datetime "updated_at",                  null: false
   end
 
-  add_index "materials", ["material_type_id"], name: "index_materials_on_material_type_id"
-  add_index "materials", ["uuid"], name: "index_materials_on_uuid"
+  add_index "materials", ["material_type_id"], name: "index_materials_on_material_type_id", using: :btree
+  add_index "materials", ["uuid"], name: "index_materials_on_uuid", unique: true, using: :btree
 
-  create_table "metadata", force: :cascade do |t|
+  create_table "metadata", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "key"
     t.string   "value"
     t.integer  "material_id"
@@ -64,6 +64,7 @@ ActiveRecord::Schema.define(version: 20160425123715) do
     t.datetime "updated_at",  null: false
   end
 
-  add_index "metadata", ["material_id"], name: "index_metadata_on_material_id"
+  add_index "metadata", ["key", "material_id"], name: "index_metadata_on_key_and_material_id", unique: true, using: :btree
+  add_index "metadata", ["material_id"], name: "index_metadata_on_material_id", using: :btree
 
 end
