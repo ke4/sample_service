@@ -102,7 +102,7 @@ RSpec.describe "MaterialBatches", type: :request do
       post_response = response
       get api_v1_material_batch_path(new_material_batch)
       get_response = response
-      expect(post_response.body).to eq(get_response.body)
+      expect(JSON.parse(post_response.body, symbolize_names: true)).to eq(JSON.parse(get_response.body, symbolize_names: true))
 
       expect(new_material_batch.name).to eq(material_batch.name)
       expect(new_material_batch.materials.size).to eq(material_batch.materials.size)

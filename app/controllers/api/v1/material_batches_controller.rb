@@ -19,7 +19,6 @@ class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
     @material_batch = MaterialBatch.new(material_batch_params)
 
     if @material_batch.bulk_save
-      set_material_batch_by_id(@material_batch.id)
       render json: @material_batch, status: :created, include: includes
     else
       render json: @material_batch.errors, status: :unprocessable_entity
@@ -29,7 +28,6 @@ class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
   # PATCH/PUT /material_batches/1
   def update
     if @material_batch.bulk_update(material_batch_params)
-      set_material_batch_by_id(@material_batch.id)
       render json: @material_batch, include: includes
     else
       render json: @material_batch.errors, status: :unprocessable_entity
@@ -49,7 +47,7 @@ class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
   def material_batch_params
     params = (material_batch_json_params[:data][:attributes] or {})
 
-    material_ids = @material_batch ? @material_batch.materials.map {|m| m.id} : []
+    material_ids = @material_batch ? @material_batch.materials.map { |m| m.id } : []
     material_attributes = []
     materials_added = 0
     if material_batch_json_params[:data] and
