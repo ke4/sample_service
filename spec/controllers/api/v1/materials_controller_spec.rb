@@ -4,6 +4,7 @@ describe Api::V1::MaterialsController, type: :request do
   def validate_material(material_json_data, material)
     expect(material_json_data[:id]).to eq(material.uuid)
     expect(material_json_data[:attributes][:name]).to eq(material.name)
+    expect(material_json_data[:attributes][:'created-at']).to eq(material.created_at.strftime('%Y-%m-%dT%H:%M:%S.%LZ'))
     expect(material_json_data[:relationships][:"material-type"][:data][:id]).to eq(material.material_type.id.to_s)
   end
 
@@ -128,6 +129,99 @@ describe Api::V1::MaterialsController, type: :request do
 
         validate_included_metadata(materials_json[:included].select { |obj| obj[:type] == 'metadata' }, materials[n].metadata)
       end
+    end
+
+    it 'should only return materials of the correct type' do
+      create_list(:material, 3)
+      material_type = create(:material_type)
+      materials = create_list(:material, 3, material_type: material_type)
+      create_list(:material, 3)
+
+      get api_v1_materials_path, params: { type: material_type.name }
+      expect(response).to be_success
+      materials_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(materials_json[:data].count).to eq(materials.size)
+
+      materials_json[:data].zip(materials).each { |material_json, material|
+        expect(material_json[:id]).to eq(material.uuid)
+      }
+    end
+
+    it 'should return empty if given invalid type' do
+      create_list(:material, 9)
+
+      get api_v1_materials_path, params: { type: "fake_name" }
+      expect(response).to be_success
+      materials_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(materials_json[:data].count).to eq(0)
+    end
+
+    it 'should return materials of the correct name' do
+      create_list(:material, 3)
+      material = create(:material)
+      create_list(:material, 3)
+
+      get api_v1_materials_path, params: { name: material.name }
+      expect(response).to be_success
+      materials_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(materials_json[:data].count).to eq(1)
+
+      expect(materials_json[:data][0][:id]).to eq(material.uuid)
+    end
+
+    it 'should return materials made after the given date' do
+      time = Time.now
+
+      old_materials = create_list(:material, 3, created_at: time - 100)
+      new_materials = create_list(:material, 3, created_at: time + 100)
+
+      get api_v1_materials_path, params: { created_after: time }
+      expect(response).to be_success
+      materials_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(materials_json[:data].count).to eq(new_materials.size)
+
+      materials_json[:data].zip(new_materials).each { |material_json, material|
+        expect(material_json[:id]).to eq(material.uuid)
+      }
+    end
+
+    it 'should return materials made before the given date' do
+      time = Time.now
+
+      old_materials = create_list(:material, 3, created_at: time - 100)
+      new_materials = create_list(:material, 3, created_at: time + 100)
+
+      get api_v1_materials_path, params: { created_before: time }
+      expect(response).to be_success
+      materials_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(materials_json[:data].count).to eq(old_materials.size)
+
+      materials_json[:data].zip(old_materials).each { |material_json, material|
+        expect(material_json[:id]).to eq(material.uuid)
+      }
+    end
+
+    it 'should return materials made between the given dates' do
+      time = Time.now
+
+      old_materials = create_list(:material, 3, created_at: time - 1000)
+      middle_materials = create_list(:material, 3, created_at: time)
+      new_materials = create_list(:material, 3, created_at: time + 1000)
+
+      get api_v1_materials_path, params: { created_after: time - 100, created_before: time + 100 }
+      expect(response).to be_success
+      materials_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(materials_json[:data].count).to eq(middle_materials.size)
+
+      materials_json[:data].zip(middle_materials).each { |material_json, material|
+        expect(material_json[:id]).to eq(material.uuid)
+      }
     end
   end
 

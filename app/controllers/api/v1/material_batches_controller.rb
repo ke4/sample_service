@@ -2,24 +2,13 @@ class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
   before_action :set_material_batch, only: [:show, :update]
   include MaterialParametersHelper
 
-  # GET /material_batches
-  def index
-    @material_batches = MaterialBatch.all
-
-    render json: @material_batches, include: includes
-  end
-
-  # GET /material_batches/1
-  def show
-    render json: @material_batch, include: includes
-  end
-
   # POST /material_batches
   def create
     @material_batch = MaterialBatch.new(material_batch_params)
 
     if @material_batch.bulk_save
-      render json: @material_batch, status: :created, include: includes
+      set_material_batch_by_id(@material_batch.id)
+      render json: @material_batch, status: :created, include: included_relations_to_render
     else
       render json: @material_batch.errors, status: :unprocessable_entity
     end
@@ -28,7 +17,8 @@ class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
   # PATCH/PUT /material_batches/1
   def update
     if @material_batch.bulk_update(material_batch_params)
-      render json: @material_batch, include: includes
+      set_material_batch_by_id(@material_batch.id)
+      render json: @material_batch, include: included_relations_to_render
     else
       render json: @material_batch.errors, status: :unprocessable_entity
     end
@@ -88,7 +78,21 @@ class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
     })
   end
 
-  def includes
+  def included_relations_to_render
     [:materials, "materials.material_type", "materials.metadata"]
+  end
+
+  def filter(params)
+    resources = MaterialBatch
+
+    params.each do |param_key, param_value|
+      resources = resources.where("Api::V1::Filters::MaterialBatch#{param_key.camelize}Filter".constantize.filter(params))
+    end
+
+    resources
+  end
+
+  def query_params
+    params.slice(:name, :created_before, :created_after)
   end
 end

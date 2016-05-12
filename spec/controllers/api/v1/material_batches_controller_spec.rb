@@ -4,6 +4,7 @@ RSpec.describe "MaterialBatches", type: :request do
   def validate_material_batch(material_batch_json_data, material_batch)
     expect(material_batch_json_data[:id]).to eq(material_batch.id.to_s)
     expect(material_batch_json_data[:attributes][:name]).to eq(material_batch.name)
+    expect(material_batch_json_data[:attributes][:'created-at']).to eq(material_batch.created_at.strftime('%Y-%m-%dT%H:%M:%S.%LZ'))
     expect(material_batch_json_data[:relationships][:materials][:data].size).to eq(material_batch.materials.size)
 
     material_batch_json_data[:relationships][:materials][:data].zip(material_batch.materials).each do |material_response, material_original|
@@ -42,6 +43,72 @@ RSpec.describe "MaterialBatches", type: :request do
       expect(material_batches_json[:included].select { |obj| obj[:type] == "materials" }.size).to eq(material_batches.sum { |mb| mb.materials.size })
       expect(material_batches_json[:included].select { |obj| obj[:type] == "material-types" }.size).to eq(material_batches.sum { |mb| mb.materials.uniq { |material| material.material_type }.size })
       expect(material_batches_json[:included].select { |obj| obj[:type] == "metadata" }.size).to eq(material_batches.sum { |mb| mb.materials.sum { |material| material.metadata.size } })
+    end
+
+    it 'should return materials of the correct name' do
+      create_list(:material_batch, 3)
+      material_batch = create(:material_batch)
+      create_list(:material_batch, 3)
+
+      get api_v1_material_batches_path, params: { name: material_batch.name }
+      expect(response).to be_success
+      material_batches_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(material_batches_json[:data].count).to eq(1)
+
+      expect(material_batches_json[:data][0][:id]).to eq(material_batch.id.to_s)
+    end
+
+    it 'should return materials made after the given date' do
+      time = Time.now
+
+      old_material_batches = create_list(:material_batch, 3, created_at: time - 100)
+      new_material_batches = create_list(:material_batch, 3, created_at: time + 100)
+
+      get api_v1_material_batches_path, params: { created_after: time }
+      expect(response).to be_success
+      material_batches_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(material_batches_json[:data].count).to eq(new_material_batches.size)
+
+      material_batches_json[:data].zip(new_material_batches).each { |material_batch_json, material_batch|
+        expect(material_batch_json[:id]).to eq(material_batch.id.to_s)
+      }
+    end
+
+    it 'should return materials made before the given date' do
+      time = Time.now
+
+      old_material_batches = create_list(:material_batch, 3, created_at: time - 100)
+      new_material_batches = create_list(:material_batch, 3, created_at: time + 100)
+
+      get api_v1_material_batches_path, params: { created_before: time }
+      expect(response).to be_success
+      material_batches_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(material_batches_json[:data].count).to eq(old_material_batches.size)
+
+      material_batches_json[:data].zip(old_material_batches).each { |material_batch_json, material_batch|
+        expect(material_batch_json[:id]).to eq(material_batch.id.to_s)
+      }
+    end
+
+    it 'should return materials made between the given dates' do
+      time = Time.now
+
+      old_material_batches = create_list(:material_batch, 3, created_at: time - 1000)
+      middle_material_batches = create_list(:material_batch, 3, created_at: time)
+      new_material_batches = create_list(:material_batch, 3, created_at: time + 1000)
+
+      get api_v1_material_batches_path, params: { created_after: time - 100, created_before: time + 100 }
+      expect(response).to be_success
+      material_batches_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(material_batches_json[:data].count).to eq(middle_material_batches.size)
+
+      material_batches_json[:data].zip(middle_material_batches).each { |material_batch_json, material_batch|
+        expect(material_batch_json[:id]).to eq(material_batch.id.to_s)
+      }
     end
   end
 
