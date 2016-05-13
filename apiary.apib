@@ -10,6 +10,10 @@ RESTful JSON API-blueprint for registering and modifying all types of material (
 
 This action response with a list of all material types.
 
++ Parameters
+   + page%5Bnumber%5D (number, optional) - Which page of material types to return
+   + page%5Bsize%5D (number, optional) - Number of material types per page (default=25)
+
 + Response 200 (application/json)
 
         {
@@ -103,6 +107,14 @@ object containing data of the new Material Type.
 ### List All Materials [GET]
 
 This action response with a list of all materials.
+
++ Parameters
+   + page%5Bnumber%5D (number, optional) - Which page of materials to return
+   + page%5Bsize%5D (number, optional) - Number of materials per page (default=25)
+   + material_type (string, optional) - Only show materials of this type
+   + name (string, optional) - Only show materials with this name
+   + created_after (dateTime, optional) - Only show materials made after this time
+   + created_before (dateTime, optional) - Only show materials made before this time
 
 + Response 200 (application/json)
 
@@ -671,6 +683,13 @@ It is optional to the material to has one or more metadata relationship(s).
 ### List All MaterialBatches [GET]
 
 This action response with a list of all material batches.
+
++ Parameters
+   + page%5Bnumber%5D (number, optional) - Which page of material batches to return
+   + page%5Bsize%5D (number, optional) - Number of material batches per page (default=25)
+   + name (string, optional) - Only show material batches with this name
+   + created_after (dateTime, optional) - Only show material batches made after this time
+   + created_before (dateTime, optional) - Only show material batches made before this time
 
 + Response 200 (application/json)
 
