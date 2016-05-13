@@ -86,7 +86,7 @@ class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
     resources = MaterialBatch
 
     params.each do |param_key, param_value|
-      resources = resources.where("Api::V1::Filters::MaterialBatch#{param_key.camelize}Filter".constantize.filter(params))
+      resources = resources.where("Api::V1::Filters::#{param_key.camelize}Filter".constantize.filter(params))
     end
 
     resources

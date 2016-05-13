@@ -46,7 +46,7 @@ class Api::V1::MaterialsController < Api::V1::ApplicationController
     resources = Material
 
     params.each do |param_key, param_value|
-      resources = resources.where("Api::V1::Filters::Material#{param_key.camelize}Filter".constantize.filter(params))
+      resources = resources.where("Api::V1::Filters::#{param_key.camelize}Filter".constantize.filter(params))
     end
 
     resources
