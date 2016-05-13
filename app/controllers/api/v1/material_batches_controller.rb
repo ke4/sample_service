@@ -82,16 +82,6 @@ class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
     [:materials, "materials.material_type", "materials.metadata"]
   end
 
-  def filter(params)
-    resources = MaterialBatch
-
-    params.each do |param_key, param_value|
-      resources = resources.where("Api::V1::Filters::#{param_key.camelize}Filter".constantize.filter(params))
-    end
-
-    resources
-  end
-
   def query_params
     params.slice(:name, :created_before, :created_after)
   end

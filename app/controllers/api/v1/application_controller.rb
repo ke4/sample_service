@@ -5,8 +5,8 @@ class Api::V1::ApplicationController < ActionController::API
   def index
     plural_resource_name = "@#{resource_name.pluralize}"
     resources = filter(query_params)
-        .page(page_params[:page])
-        .per(page_params[:page_size])
+        .page(page_params[:number])
+        .per(page_params[:size])
 
     instance_variable_set(plural_resource_name, resources)
     resource = instance_variable_get(plural_resource_name)
@@ -31,11 +31,17 @@ class Api::V1::ApplicationController < ActionController::API
   end
 
   # Returns the filtered array of resources
-  # Override this method in each API controller
-  # to implement the filter logic
+  # Override query_params to change what the
+  # resource is filtered by
   # @return [Class]
-  def filter(query_params)
-    resource_class
+  def filter(params)
+    resources = resource_class
+
+    params.each do |param_key, param_value|
+      resources = resources.where("Api::V1::Filters::#{param_key.camelize}Filter".constantize.filter(params))
+    end
+
+    resources
   end
 
   # Returns the allowed parameters for searching
@@ -49,7 +55,7 @@ class Api::V1::ApplicationController < ActionController::API
   # Returns the allowed parameters for pagination
   # @return [Hash]
   def page_params
-    params.slice(:page, :page_size)
+    params.permit(page: [:number, :size])[:page] or {}
   end
 
   # The resource class based on the controller

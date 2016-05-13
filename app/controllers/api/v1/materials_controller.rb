@@ -42,16 +42,6 @@ class Api::V1::MaterialsController < Api::V1::ApplicationController
     [:material_type, :metadata]
   end
 
-  def filter(params)
-    resources = Material
-
-    params.each do |param_key, param_value|
-      resources = resources.where("Api::V1::Filters::#{param_key.camelize}Filter".constantize.filter(params))
-    end
-
-    resources
-  end
-
   def query_params
     params.slice(:type, :name, :created_before, :created_after)
   end
