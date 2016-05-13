@@ -2,24 +2,12 @@ class Api::V1::MaterialsController < Api::V1::ApplicationController
   before_action :set_material, only: [:show, :update]
   include MaterialParametersHelper
 
-  # GET /materials
-  def index
-    @materials = Material.all
-
-    render json: @materials, include: includes
-  end
-
-  # GET /materials/1
-  def show
-    render json: @material, include: includes
-  end
-
   # POST /materials
   def create
     @material = Material.new(material_params)
 
     if @material.save
-      render json: @material, status: :created, include: includes
+      render json: @material, status: :created, include: included_relations_to_render
     else
       render json: @material.errors, status: :unprocessable_entity
     end
@@ -28,7 +16,7 @@ class Api::V1::MaterialsController < Api::V1::ApplicationController
   # PATCH/PUT /materials/1
   def update
     if @material.update(material_params)
-      render json: @material, include: includes
+      render json: @material, include: included_relations_to_render
     else
       render json: @material.errors, status: :unprocessable_entity
     end
@@ -50,7 +38,11 @@ class Api::V1::MaterialsController < Api::V1::ApplicationController
     params.permit(material_json_schema)
   end
 
-  def includes
+  def included_relations_to_render
     [:material_type, :metadata]
+  end
+
+  def query_params
+    params.slice(:material_type, :name, :created_before, :created_after)
   end
 end

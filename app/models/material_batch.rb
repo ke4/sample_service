@@ -29,11 +29,6 @@ class MaterialBatch < ApplicationRecord
 
       metadata = materials.flat_map { |m| m.metadata }
       Metadatum.import metadata.select { |md| md.changed? }, validate: false, on_duplicate_key_update: Metadatum.column_names
-      metadata_to_add = metadata.select { |md| md.id.nil? }
-      added_metadata = Metadatum.last(metadata_to_add.size)
-      metadata_to_add.zip(added_metadata).each { |md, add_md|
-        md.id = add_md.id
-      }
 
       material_batches_materials = materials.map { |material|
         material_batches_material = self.material_batches_materials.find { |mbm| mbm.material_batch_id == id and mbm.material_id == material.id }
