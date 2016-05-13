@@ -43,6 +43,6 @@ class Api::V1::MaterialsController < Api::V1::ApplicationController
   end
 
   def query_params
-    params.slice(:type, :name, :created_before, :created_after)
+    params.slice(:material_type, :name, :created_before, :created_after)
   end
 end

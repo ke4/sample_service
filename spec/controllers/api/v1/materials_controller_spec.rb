@@ -137,7 +137,7 @@ describe Api::V1::MaterialsController, type: :request do
       materials = create_list(:material, 3, material_type: material_type)
       create_list(:material, 3)
 
-      get api_v1_materials_path, params: { type: material_type.name }
+      get api_v1_materials_path, params: { material_type: material_type.name }
       expect(response).to be_success
       materials_json = JSON.parse(response.body, symbolize_names: true)
 
@@ -151,7 +151,7 @@ describe Api::V1::MaterialsController, type: :request do
     it 'should return empty if given invalid type' do
       create_list(:material, 9)
 
-      get api_v1_materials_path, params: { type: "fake_name" }
+      get api_v1_materials_path, params: { material_type: "fake_name" }
       expect(response).to be_success
       materials_json = JSON.parse(response.body, symbolize_names: true)
 
