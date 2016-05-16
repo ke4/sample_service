@@ -4,7 +4,7 @@ RSpec.describe "MaterialBatches", type: :request do
   def validate_material_batch(material_batch_json_data, material_batch)
     expect(material_batch_json_data[:id]).to eq(material_batch.id.to_s)
     expect(material_batch_json_data[:attributes][:name]).to eq(material_batch.name)
-    expect(material_batch_json_data[:attributes][:'created-at']).to eq(material_batch.created_at.strftime('%Y-%m-%dT%H:%M:%S.%LZ'))
+    expect(material_batch_json_data[:attributes][:created_at]).to eq(material_batch.created_at.strftime('%Y-%m-%dT%H:%M:%S.%LZ'))
     expect(material_batch_json_data[:relationships][:materials][:data].size).to eq(material_batch.materials.size)
 
     material_batch_json_data[:relationships][:materials][:data].zip(material_batch.materials).each do |material_response, material_original|
@@ -24,7 +24,7 @@ RSpec.describe "MaterialBatches", type: :request do
       validate_material_batch(material_batch_json[:data], material_batch)
 
       expect(material_batch_json[:included].select { |obj| obj[:type] == "materials" }.size).to eq(material_batch.materials.size)
-      expect(material_batch_json[:included].select { |obj| obj[:type] == "material-types" }.size).to eq(material_batch.materials.uniq { |material| material.material_type }.size)
+      expect(material_batch_json[:included].select { |obj| obj[:type] == "material_types" }.size).to eq(material_batch.materials.uniq { |material| material.material_type }.size)
       expect(material_batch_json[:included].select { |obj| obj[:type] == "metadata" }.size).to eq(material_batch.materials.sum { |material| material.metadata.size })
     end
   end
@@ -41,7 +41,7 @@ RSpec.describe "MaterialBatches", type: :request do
       material_batches_json[:data].zip(material_batches).each { |material_batch_json, material_batch| validate_material_batch(material_batch_json, material_batch) }
 
       expect(material_batches_json[:included].select { |obj| obj[:type] == "materials" }.size).to eq(material_batches.sum { |mb| mb.materials.size })
-      expect(material_batches_json[:included].select { |obj| obj[:type] == "material-types" }.size).to eq(material_batches.sum { |mb| mb.materials.uniq { |material| material.material_type }.size })
+      expect(material_batches_json[:included].select { |obj| obj[:type] == "material_types" }.size).to eq(material_batches.sum { |mb| mb.materials.uniq { |material| material.material_type }.size })
       expect(material_batches_json[:included].select { |obj| obj[:type] == "metadata" }.size).to eq(material_batches.sum { |mb| mb.materials.sum { |material| material.metadata.size } })
     end
 
