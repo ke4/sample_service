@@ -35,16 +35,13 @@ class Api::V1::MaterialBatchesController < Api::V1::ApplicationController
   end
 
   def material_batch_params
-    params = (material_batch_json_params[:data][:attributes] or {})
+    params = (material_batch_json_params.dig(:data, :attributes) or {})
 
     material_ids = @material_batch ? @material_batch.materials.map { |m| m.id } : []
     material_attributes = []
     materials_added = 0
-    if material_batch_json_params[:data] and
-        material_batch_json_params[:data][:relationships] and
-        material_batch_json_params[:data][:relationships][:materials] and
-        material_batch_json_params[:data][:relationships][:materials][:data]
-      material_batch_json_params[:data][:relationships][:materials][:data].each { |material_json|
+    if (data = material_batch_json_params.dig(:data, :relationships, :materials, :data))
+      data.each { |material_json|
         material = material_json[:id] ? Material.find_by(uuid: material_json[:id]) : nil
         material_params = build_material_params(material, material_json).merge(id: material ? material.id : nil)
 

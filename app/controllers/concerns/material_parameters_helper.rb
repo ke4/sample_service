@@ -5,21 +5,13 @@ module MaterialParametersHelper
     params = (material_json_params[:attributes] or {}).merge(uuid: material_json_params[:id]).delete_if { |k, v| v.nil? }
 
     material_type = material ? material.material_type : nil
-    if material_json_params and
-        material_json_params[:relationships] and
-        material_json_params[:relationships][:material_type] and
-        material_json_params[:relationships][:material_type][:data] and
-        material_json_params[:relationships][:material_type][:data][:attributes]
-      material_type = MaterialType.find_by(material_json_params[:relationships][:material_type][:data][:attributes])
+    if (material_type_params = material_json_params.dig(:relationships, :material_type, :data, :attributes))
+      material_type = MaterialType.find_by(material_type_params)
     end
 
     metadata = material ? material.metadata.map { |metadatum| {id: metadatum.id, key: metadatum.key, value: metadatum.value} } : []
-    if material_json_params and
-        material_json_params[:relationships] and
-        material_json_params[:relationships][:metadata] and
-        material_json_params[:relationships][:metadata][:data]
-
-      material_json_params[:relationships][:metadata][:data].each { |metadatum|
+    if (metadata_params = material_json_params.dig(:relationships, :metadata, :data))
+      metadata_params.each { |metadatum|
         metadatum = metadatum[:attributes]
         existing_metadatum = metadata.find { |m| m[:key] == metadatum[:key] }
         if existing_metadatum
@@ -31,11 +23,8 @@ module MaterialParametersHelper
     end
 
     parent_uuids = material ? material.parents.map { |parent| parent.uuid } : []
-    if material_json_params and
-        material_json_params[:relationships] and
-        material_json_params[:relationships][:parents] and
-        material_json_params[:relationships][:parents][:data]
-      parent_uuids += material_json_params[:relationships][:parents][:data].map { |parent| parent[:id] }
+    if (parent_data = material_json_params.dig(:relationships, :parents, :data))
+      parent_uuids += parent_data.map { |parent| parent[:id] }
     end
 
     unless parent_uuids.empty?
