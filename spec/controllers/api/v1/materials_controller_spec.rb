@@ -4,8 +4,8 @@ describe Api::V1::MaterialsController, type: :request do
   def validate_material(material_json_data, material)
     expect(material_json_data[:id]).to eq(material.uuid)
     expect(material_json_data[:attributes][:name]).to eq(material.name)
-    expect(material_json_data[:attributes][:'created-at']).to eq(material.created_at.strftime('%Y-%m-%dT%H:%M:%S.%LZ'))
-    expect(material_json_data[:relationships][:"material-type"][:data][:id]).to eq(material.material_type.id.to_s)
+    expect(material_json_data[:attributes][:created_at]).to eq(material.created_at.strftime('%Y-%m-%dT%H:%M:%S.%LZ'))
+    expect(material_json_data[:relationships][:material_type][:data][:id]).to eq(material.material_type.id.to_s)
   end
 
   def validate_included_material_type(material_type_json, material_type)
@@ -39,7 +39,7 @@ describe Api::V1::MaterialsController, type: :request do
 
       validate_material(material_json[:data], material)
 
-      material_type_json = material_json[:included].select { |obj| obj[:type] == 'material-types' }[0]
+      material_type_json = material_json[:included].select { |obj| obj[:type] == 'material_types' }[0]
 
       validate_included_material_type(material_type_json, material.material_type)
     end
@@ -107,7 +107,7 @@ describe Api::V1::MaterialsController, type: :request do
         validate_material(material_json[:data][n], materials[n])
 
         material_type_json = material_json[:included].select { |obj|
-          obj[:type] == 'material-types' and obj[:id] == material_json[:data][n][:relationships][:"material-type"][:data][:id] }[0]
+          obj[:type] == 'material_types' and obj[:id] == material_json[:data][n][:relationships][:"material_type"][:data][:id] }[0]
 
         validate_included_material_type(material_type_json, materials[n].material_type)
       end
@@ -364,10 +364,10 @@ describe Api::V1::MaterialsController, type: :request do
       expect(response_json[:data][:id]).to eq(Material.last.uuid)
       expect(response_json[:data][:type]).to eq('materials')
       expect(response_json[:data][:attributes][:name]).to eq(material.name)
-      expect(response_json[:data][:relationships][:"material-type"][:data][:id]).to eq(material.material_type.id.to_s)
+      expect(response_json[:data][:relationships][:"material_type"][:data][:id]).to eq(material.material_type.id.to_s)
 
-      expect(response_json[:included].find { |obj| obj[:type] == 'material-types' }[:id]).to eq(material.material_type.id.to_s)
-      expect(response_json[:included].find { |obj| obj[:type] == 'material-types' }[:attributes][:name]).to eq(material.material_type.name)
+      expect(response_json[:included].find { |obj| obj[:type] == 'material_types' }[:id]).to eq(material.material_type.id.to_s)
+      expect(response_json[:included].find { |obj| obj[:type] == 'material_types' }[:attributes][:name]).to eq(material.material_type.name)
     end
 
     it "should create a material instance with metadata" do
@@ -684,7 +684,7 @@ describe Api::V1::MaterialsController, type: :request do
 
       expect(response_json[:data][:id]).to eq(new_uuid)
       expect(response_json[:data][:attributes][:name]).to eq(new_name)
-      expect(response_json[:data][:relationships][:"material-type"][:data][:id]).to eq(new_material_type.id.to_s)
+      expect(response_json[:data][:relationships][:material_type][:data][:id]).to eq(new_material_type.id.to_s)
 
       @material.reload
 
@@ -724,7 +724,7 @@ describe Api::V1::MaterialsController, type: :request do
 
       expect(response_json[:data][:id]).to eq(original_uuid)
       expect(response_json[:data][:attributes][:name]).to eq(original_name)
-      expect(response_json[:data][:relationships][:"material-type"][:data][:id]).to eq(new_material_type.id.to_s)
+      expect(response_json[:data][:relationships][:material_type][:data][:id]).to eq(new_material_type.id.to_s)
 
       @material.reload
 
