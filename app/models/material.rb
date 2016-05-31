@@ -12,16 +12,16 @@ class Material < ApplicationRecord
   has_many :children, through: :child_derivatives
 
   validates :name, presence: true
-  validates :uuid, uuid: true, unless: 'uuid.nil?'
+  validates :uuid, uuid: true, if: :uuid
 
-  after_validation :generate_uuid, if: "uuid.nil?"
+  after_validation :generate_uuid, unless: :uuid
 
   attr_accessor :expected_parent_uuids
   validate :expected_parents_match, if: :expected_parent_uuids
 
   # accepts_nested_attributes_for :metadata
   attr_accessor :metadata_attributes
-  validate :metadata_check
+  after_validation :metadata_check
 
   def self.my_new(params)
     object = Material.new(params)
@@ -47,17 +47,6 @@ class Material < ApplicationRecord
     valid?
   end
 
-  def my_update(params)
-    return false unless my_assign_attributes(params)
-
-    ActiveRecord::Base.transaction do
-      self.save!
-      self.metadata.each { |md| md.save! }
-    end
-
-    true
-  end
-
   private
 
   def generate_uuid
@@ -70,7 +59,6 @@ class Material < ApplicationRecord
 
   def metadata_check
     self.metadata.each { |metadatum|
-      metadatum.valid?
       metadatum.errors.each { |key|
         metadatum.errors[key].each { |error|
           self.errors.add "metadata.#{key}", error

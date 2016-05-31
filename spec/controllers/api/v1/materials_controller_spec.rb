@@ -626,11 +626,9 @@ describe Api::V1::MaterialsController, type: :request do
     it 'should keep the old attributes if none are provided' do
       @material = create(:material)
       old_name = @material.name
-      new_uuid = UUID.new.generate
 
       @material_json = {
           data: {
-              id: new_uuid
           }
       }
 
@@ -642,24 +640,20 @@ describe Api::V1::MaterialsController, type: :request do
 
       expect(response).to be_success
 
-      expect(response_json[:data][:id]).to eq(new_uuid)
       expect(response_json[:data][:attributes][:name]).to eq(old_name)
 
       @material.reload
 
       expect(@material.name).to eq(old_name)
-      expect(@material.uuid).to eq(new_uuid)
     end
 
     it 'should update the material_type' do
       @material = create(:material)
       new_material_type = create(:material_type)
       new_name = 'new name'
-      new_uuid = UUID.new.generate
 
       @material_json = {
           data: {
-              id: new_uuid,
               attributes: {
                   name: new_name,
               },
@@ -683,14 +677,12 @@ describe Api::V1::MaterialsController, type: :request do
 
       expect(response).to be_success
 
-      expect(response_json[:data][:id]).to eq(new_uuid)
       expect(response_json[:data][:attributes][:name]).to eq(new_name)
       expect(response_json[:data][:relationships][:material_type][:data][:id]).to eq(new_material_type.id.to_s)
 
       @material.reload
 
       expect(@material.name).to eq(new_name)
-      expect(@material.uuid).to eq(new_uuid)
       expect(@material.material_type).to eq(new_material_type)
     end
 
