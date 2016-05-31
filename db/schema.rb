@@ -11,23 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160505142710) do
-
-  create_table "material_batches", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
-    t.string   "name"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "material_batches_materials", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
-    t.integer  "material_id"
-    t.integer  "material_batch_id"
-    t.datetime "created_at",        null: false
-    t.datetime "updated_at",        null: false
-  end
-
-  add_index "material_batches_materials", ["material_batch_id"], name: "index_material_batches_materials_on_material_batch_id", using: :btree
-  add_index "material_batches_materials", ["material_id"], name: "index_material_batches_materials_on_material_id", using: :btree
+ActiveRecord::Schema.define(version: 20160527121648) do
 
   create_table "material_derivatives", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.integer  "parent_id"

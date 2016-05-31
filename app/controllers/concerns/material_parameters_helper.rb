@@ -1,7 +1,7 @@
 module MaterialParametersHelper
   extend ActiveSupport::Concern
 
-  def build_material_params(material, material_json_params)
+  def build_material_params(material, material_json_params, uuid_materials = {})
     params = (material_json_params[:attributes] or {}).merge(uuid: material_json_params[:id]).delete_if { |k, v| v.nil? }
 
     material_type = material ? material.material_type : nil
@@ -22,14 +22,16 @@ module MaterialParametersHelper
       }
     end
 
-    parent_uuids = material ? material.parents.map { |parent| parent.uuid } : []
+    old_parent_uuids = material ? material.parents.map { |parent| parent.uuid } : []
+    new_parent_uuids = []
     if (parent_data = material_json_params.dig(:relationships, :parents, :data))
-      parent_uuids += parent_data.map { |parent| parent[:id] }
+      parent_data.each { |parent|
+        unless parent[:id].in? old_parent_uuids
+          new_parent_uuids << parent[:id]
+        end
+      }
     end
-
-    unless parent_uuids.empty?
-      params = params.merge(parents: Material.where(uuid: parent_uuids), expected_parent_uuids: parent_uuids)
-    end
+    params = params.merge(parents: (material ? material.parents : []) + new_parent_uuids.map { |uuid| uuid_materials.dig(uuid, 0) }.reject { |m| m.nil? }, expected_parent_uuids: old_parent_uuids + new_parent_uuids)
 
     params.merge(material_type: material_type, metadata_attributes: metadata)
   end

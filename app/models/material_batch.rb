@@ -1,12 +1,45 @@
-class MaterialBatch < ApplicationRecord
-  has_many :material_batches_materials
-  has_many :materials, through: :material_batches_materials
+class MaterialBatch
+  include ActiveModel::Model
+  include ActiveModel::Serialization
 
   validates :materials, presence: true
-  validate :check_materials_added, if: '!materials_added.nil?'
   attr_accessor :materials_added
 
-  accepts_nested_attributes_for :materials
+  attr_accessor :materials
+  attr_accessor :materials_attributes
+
+  def valid?
+    super()
+
+    self.materials.each { |material|
+      material.valid?
+      material.errors.each { |key|
+        material.errors[key].each { |error|
+        self.errors.add "materials.#{key}", error
+        }
+      }
+    }
+
+    errors.empty?
+  end
+
+  def self.my_new(params)
+    object = MaterialBatch.new(materials: params[:materials])
+
+    id_materials = {}
+    object.materials.each { |m|
+      id_materials[m.id.to_s] = m
+    }
+    (params[:materials_attributes] or []).each { |attr|
+      if attr.has_key? :id and attr[:id]
+        id_materials[attr[:id].to_s].my_assign_attributes(attr)
+      else
+        object.materials << Material.my_new(attr)
+      end
+    }
+
+    object
+  end
 
   def bulk_save
     return false unless self.valid?
@@ -14,11 +47,6 @@ class MaterialBatch < ApplicationRecord
     parent_derivatives = materials.flat_map { |material| material.parent_derivatives }
 
     ActiveRecord::Base.transaction do
-      if self.changed?
-        MaterialBatch.import [self], validate: false, on_duplicate_key_update: MaterialBatch.column_names
-        self.id ||= MaterialBatch.last.id
-      end
-
       Material.import materials.select { |m| m.changed? }, validate: false, on_duplicate_key_update: Material.column_names
       materials_to_add = materials.select { |m| m.id.nil? }
       added_materials = Material.last(materials_to_add.size)
@@ -30,30 +58,13 @@ class MaterialBatch < ApplicationRecord
       metadata = materials.flat_map { |m| m.metadata }
       Metadatum.import metadata.select { |md| md.changed? }, validate: false, on_duplicate_key_update: Metadatum.column_names
 
-      material_batches_materials = materials.map { |material|
-        material_batches_material = self.material_batches_materials.find { |mbm| mbm.material_batch_id == id and mbm.material_id == material.id }
-        (material_batches_material ? material_batches_material : MaterialBatchesMaterial.new(material_batch_id: id, material_id: material.id))
-      }
-      MaterialBatchesMaterial.import material_batches_materials, validate: false
-
       material_derivatives = parent_derivatives.each { |pd| pd.child_id = pd.child.id }
       MaterialDerivative.import material_derivatives.select { |md| md.changed? }, validate: false
+
+
+      self.materials = Material.includes(:metadata, :material_type, :parents, :children).where(id: materials.map { |m| m.id })
     end
 
     true
-  end
-
-  def bulk_update(parameters)
-    assign_attributes(parameters)
-
-    bulk_save
-  end
-
-  private
-
-  def check_materials_added
-    if materials_added > 0
-      errors.add :materials, I18n.t('errors.messages.add_to_batch')
-    end
   end
 end

@@ -553,6 +553,7 @@ describe Api::V1::MaterialsController, type: :request do
 
     it 'should fail when parent uuid does not exist' do
       material = build(:material, parents: build_list(:material, 3))
+      material.valid?
 
       @material_json = {
           data: {
@@ -1027,9 +1028,10 @@ describe Api::V1::MaterialsController, type: :request do
       expect(new_material.parents).to eq(@material.parents)
     end
 
-    it 'should fail and rollback if parent don\'t exist' do
+    it "should fail and rollback if parent don't exist" do
       @material = create(:material_with_parents)
       parents = build_list(:material, 3)
+      parents.each { |p| p.valid? }
 
       @material_json = {
           data: {

@@ -38,7 +38,9 @@ RSpec.describe Material, type: :model do
   it "should be invalid with a duplicate UUID parameter" do
     uuid_param = UUID.new.generate
     create(:material, uuid: uuid_param)
-    expect(build(:material, uuid: uuid_param)).to_not be_valid
+
+    new_material = build(:material, uuid: uuid_param)
+    expect { new_material.save }.to raise_error(ActiveRecord::RecordNotUnique)
   end
 
   it 'should be able to have child materials' do
