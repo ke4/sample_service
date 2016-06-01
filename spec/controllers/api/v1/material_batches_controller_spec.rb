@@ -1,117 +1,6 @@
 require 'rails_helper'
 
 RSpec.describe "MaterialBatches", type: :request do
-  def validate_material_batch(material_batch_json_data, material_batch)
-    expect(material_batch_json_data[:id]).to eq(material_batch.id.to_s)
-    expect(material_batch_json_data[:attributes][:name]).to eq(material_batch.name)
-    expect(material_batch_json_data[:attributes][:created_at]).to eq(material_batch.created_at.strftime('%Y-%m-%dT%H:%M:%S.%LZ'))
-    expect(material_batch_json_data[:relationships][:materials][:data].size).to eq(material_batch.materials.size)
-
-    material_batch_json_data[:relationships][:materials][:data].zip(material_batch.materials).each do |material_response, material_original|
-      expect(material_response[:id]).to eq(material_original.uuid)
-    end
-  end
-
-  describe "GET #show" do
-    it "should return a serialized material_batch instance" do
-      material_batch = create(:material_batch_with_metadata)
-
-      get api_v1_material_batch_path(material_batch)
-      expect(response).to be_success
-
-      material_batch_json = JSON.parse(response.body, symbolize_names: true)
-
-      validate_material_batch(material_batch_json[:data], material_batch)
-
-      expect(material_batch_json[:included].select { |obj| obj[:type] == "materials" }.size).to eq(material_batch.materials.size)
-      expect(material_batch_json[:included].select { |obj| obj[:type] == "material_types" }.size).to eq(material_batch.materials.uniq { |material| material.material_type }.size)
-      expect(material_batch_json[:included].select { |obj| obj[:type] == "metadata" }.size).to eq(material_batch.materials.sum { |material| material.metadata.size })
-    end
-  end
-
-  describe "GET #index" do
-    it "should return a list of serialized material_batch instances" do
-      material_batches = create_list(:material_batch_with_metadata, 3)
-
-      get api_v1_material_batches_path
-      expect(response).to be_success
-
-      material_batches_json = JSON.parse(response.body, symbolize_names: true)
-
-      material_batches_json[:data].zip(material_batches).each { |material_batch_json, material_batch| validate_material_batch(material_batch_json, material_batch) }
-
-      expect(material_batches_json[:included].select { |obj| obj[:type] == "materials" }.size).to eq(material_batches.sum { |mb| mb.materials.size })
-      expect(material_batches_json[:included].select { |obj| obj[:type] == "material_types" }.size).to eq(material_batches.sum { |mb| mb.materials.uniq { |material| material.material_type }.size })
-      expect(material_batches_json[:included].select { |obj| obj[:type] == "metadata" }.size).to eq(material_batches.sum { |mb| mb.materials.sum { |material| material.metadata.size } })
-    end
-
-    it 'should return materials of the correct name' do
-      create_list(:material_batch, 3)
-      material_batch = create(:material_batch)
-      create_list(:material_batch, 3)
-
-      get api_v1_material_batches_path, params: { name: material_batch.name }
-      expect(response).to be_success
-      material_batches_json = JSON.parse(response.body, symbolize_names: true)
-
-      expect(material_batches_json[:data].count).to eq(1)
-
-      expect(material_batches_json[:data][0][:id]).to eq(material_batch.id.to_s)
-    end
-
-    it 'should return materials made after the given date' do
-      time = Time.now
-
-      old_material_batches = create_list(:material_batch, 3, created_at: time - 100)
-      new_material_batches = create_list(:material_batch, 3, created_at: time + 100)
-
-      get api_v1_material_batches_path, params: { created_after: time }
-      expect(response).to be_success
-      material_batches_json = JSON.parse(response.body, symbolize_names: true)
-
-      expect(material_batches_json[:data].count).to eq(new_material_batches.size)
-
-      material_batches_json[:data].zip(new_material_batches).each { |material_batch_json, material_batch|
-        expect(material_batch_json[:id]).to eq(material_batch.id.to_s)
-      }
-    end
-
-    it 'should return materials made before the given date' do
-      time = Time.now
-
-      old_material_batches = create_list(:material_batch, 3, created_at: time - 100)
-      new_material_batches = create_list(:material_batch, 3, created_at: time + 100)
-
-      get api_v1_material_batches_path, params: { created_before: time }
-      expect(response).to be_success
-      material_batches_json = JSON.parse(response.body, symbolize_names: true)
-
-      expect(material_batches_json[:data].count).to eq(old_material_batches.size)
-
-      material_batches_json[:data].zip(old_material_batches).each { |material_batch_json, material_batch|
-        expect(material_batch_json[:id]).to eq(material_batch.id.to_s)
-      }
-    end
-
-    it 'should return materials made between the given dates' do
-      time = Time.now
-
-      old_material_batches = create_list(:material_batch, 3, created_at: time - 1000)
-      middle_material_batches = create_list(:material_batch, 3, created_at: time)
-      new_material_batches = create_list(:material_batch, 3, created_at: time + 1000)
-
-      get api_v1_material_batches_path, params: { created_after: time - 100, created_before: time + 100 }
-      expect(response).to be_success
-      material_batches_json = JSON.parse(response.body, symbolize_names: true)
-
-      expect(material_batches_json[:data].count).to eq(middle_material_batches.size)
-
-      material_batches_json[:data].zip(middle_material_batches).each { |material_batch_json, material_batch|
-        expect(material_batch_json[:id]).to eq(material_batch.id.to_s)
-      }
-    end
-  end
-
   describe "POST #create" do
     let(:post_json) {
       headers = {
@@ -126,9 +15,6 @@ RSpec.describe "MaterialBatches", type: :request do
 
       @material_batch_json = {
           data: {
-              attributes: {
-                  name: material_batch.name
-              },
               relationships: {
                   materials: {
                       data: material_batch.materials.map { |material| {
@@ -158,28 +44,29 @@ RSpec.describe "MaterialBatches", type: :request do
           }
       }
 
-      expect { post_json }.to change { MaterialBatch.count }.by(1)
-                          .and change { Material.count }.by(3)
-                          .and change { MaterialType.count }.by(0)
-                          .and change { Metadatum.count }.by(9)
+      expect { post_json }.to change { Material.count }.by(3)
+                                  .and change { MaterialType.count }.by(0)
+                                           .and change { Metadatum.count }.by(9)
       expect(response).to be_created
 
-      new_material_batch = MaterialBatch.last
+      new_materials = Material.last(3)
 
-      post_response = response
-      get api_v1_material_batch_path(new_material_batch)
-      get_response = response
-      expect(JSON.parse(post_response.body, symbolize_names: true)).to eq(JSON.parse(get_response.body, symbolize_names: true))
-
-      expect(new_material_batch.name).to eq(material_batch.name)
-      expect(new_material_batch.materials.size).to eq(material_batch.materials.size)
-      new_material_batch.materials.zip(material_batch.materials).each { |new_material, material|
+      expect(new_materials.size).to eq(material_batch.materials.size)
+      new_materials.zip(material_batch.materials).each { |new_material, material|
         expect(new_material.material_type).to eq(material.material_type)
         expect(new_material.metadata.size).to eq(material.metadata.size)
         new_material.metadata.zip(material.metadata).each { |new_metadata, metadata|
           expect(new_metadata.key).to eq(metadata.key)
           expect(new_metadata.value).to eq(metadata.value)
         }
+      }
+
+      response_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response_json[:data][:relationships][:materials][:data].size).to eq(new_materials.size)
+      response_json[:data][:relationships][:materials][:data].zip(new_materials).each { |material_json, material|
+        expect(material_json[:id]).to eq(material.uuid)
+        expect(response_json[:included].find { |included| included[:type] == "materials" and included[:id] == material.uuid }[:attributes][:name]).to eq(material.name)
       }
     end
 
@@ -189,9 +76,6 @@ RSpec.describe "MaterialBatches", type: :request do
 
       @material_batch_json = {
           data: {
-              attributes: {
-                  name: material_batch.name
-              },
               relationships: {
                   materials: {
                       data: material_batch.materials.map { |material| {
@@ -221,10 +105,9 @@ RSpec.describe "MaterialBatches", type: :request do
           }
       }
 
-      expect { post_json }.to change { MaterialBatch.count }.by(0)
-                          .and change { Material.count }.by(0)
-                          .and change { MaterialType.count }.by(0)
-                          .and change { Metadatum.count }.by(0)
+      expect { post_json }.to change { Material.count }.by(0)
+                                  .and change { MaterialType.count }.by(0)
+                                           .and change { Metadatum.count }.by(0)
       expect(response).to be_unprocessable
       response_json = JSON.parse(response.body, symbolize_names: true)
 
@@ -234,15 +117,12 @@ RSpec.describe "MaterialBatches", type: :request do
 
     it 'should create materials with parents' do
       material_batch = build(:material_batch_with_metadata)
-      material_batch.materials.each {|material|
+      material_batch.materials.each { |material|
         material.parents << create(:material)
       }
 
       @material_batch_json = {
           data: {
-              attributes: {
-                  name: material_batch.name
-              },
               relationships: {
                   materials: {
                       data: material_batch.materials.map { |material| {
@@ -260,7 +140,7 @@ RSpec.describe "MaterialBatches", type: :request do
                               parents: {
                                   data: material.parents.map { |parent| {
                                       id: parent.uuid
-                                  }}
+                                  } }
                               }
                           }
                       } }
@@ -269,23 +149,26 @@ RSpec.describe "MaterialBatches", type: :request do
           }
       }
 
-      expect { post_json }.to change  { MaterialBatch.count }.by(1)
-                          .and change { Material.count }.by(3)
-                          .and change { MaterialType.count }.by(0)
-                          .and change { Metadatum.count }.by(0)
+      expect { post_json }.to change { Material.count }.by(3)
+                                  .and change { MaterialType.count }.by(0)
+                                           .and change { Metadatum.count }.by(0)
       expect(response).to be_created
 
-      new_material_batch = MaterialBatch.last
+      new_materials = Material.last(3)
 
-      post_response = response
-      get api_v1_material_batch_path(new_material_batch)
-      get_response = response
-      expect(post_response.body).to eq(get_response.body)
-
-      expect(new_material_batch.name).to eq(material_batch.name)
-      expect(new_material_batch.materials.size).to eq(material_batch.materials.size)
-      new_material_batch.materials.zip(material_batch.materials).each { |new_material, material|
+      expect(new_materials.size).to eq(material_batch.materials.size)
+      new_materials.zip(material_batch.materials).each { |new_material, material|
         expect(new_material.parents).to eq(material.parents)
+      }
+
+      response_json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response_json[:data][:relationships][:materials][:data].size).to eq(new_materials.size)
+      response_json[:data][:relationships][:materials][:data].zip(new_materials).each { |material_json, material|
+        expect(material_json[:id]).to eq(material.uuid)
+        included_material = response_json[:included].find { |included| included[:type] == "materials" and included[:id] == material.uuid }
+        expect(included_material[:attributes][:name]).to eq(material.name)
+        expect(included_material[:relationships][:parents][:data].map { |parent_data| parent_data[:id] }).to eq(material.parents.map { |parent| parent.uuid })
       }
     end
 
@@ -294,290 +177,61 @@ RSpec.describe "MaterialBatches", type: :request do
 
       @material_batch_json = {
           data: {
-              attributes: {
-                  name: material_batch.name
-              },
               relationships: {
                   materials: {
                       data: material_batch.materials.map { |material| {
                           id: material.uuid
-                      }}
-                  }
-              }
-          }
-      }
-
-      expect { post_json }.to change  { MaterialBatch.count }.by(1)
-                                  .and change { Material.count }.by(0)
-                                           .and change { MaterialType.count }.by(0)
-                                                    .and change { Metadatum.count }.by(0)
-      expect(response).to be_created
-
-      new_material_batch = MaterialBatch.last
-
-      post_response = response
-      get api_v1_material_batch_path(new_material_batch)
-      get_response = response
-      expect(post_response.body).to eq(get_response.body)
-
-      expect(new_material_batch.name).to eq(material_batch.name)
-      expect(new_material_batch.materials.size).to eq(material_batch.materials.size)
-      expect(new_material_batch.materials).to eq(material_batch.materials)
-    end
-  end
-
-  describe "PUT #update" do
-    let(:update_material_batch) {
-      headers = {
-          'Content-Type' => 'application/json'
-      }
-
-      put api_v1_material_batch_path(@material_batch), params: @material_batch_json.to_json, headers: headers
-    }
-
-    it 'should update the material_batch' do
-      @material_batch = create(:material_batch_with_metadata)
-
-      @material_batch_json = {
-          data: {
-              attributes: {
-                  name: 'new name'
-              }
-          }
-      }
-
-      expect { update_material_batch }.to change { MaterialBatch.count }.by(0)
-                                      .and change { Material.count }.by(0)
-                                      .and change { MaterialType.count }.by(0)
-                                      .and change { Metadatum.count }.by(0)
-      expect(response).to be_success
-      expect(MaterialBatch.find(@material_batch.id).name).to eq("new name")
-
-      response_json = JSON.parse(response.body, symbolize_names: true)
-
-      expect(response_json[:data][:attributes][:name]).to eq('new name')
-    end
-
-    it "should update the material_batch when changing the materials" do
-      @material_batch = create(:material_batch_with_metadata)
-
-      @material_batch_json = {
-          data: {
-              relationships: {
-                  materials: {
-                      data: @material_batch.materials.map { |material| {
-                          id: material.uuid,
-                          attributes: {
-                              name: material.name + '_changed'
-                          }
                       } }
                   }
               }
           }
       }
 
-      expect { update_material_batch }.to  change { MaterialBatch.count }.by(0)
-                                      .and change { Material.count }.by(0)
-                                      .and change { MaterialType.count }.by(0)
-                                      .and change { Metadatum.count }.by(0)
-      expect(response).to be_success
+      expect { post_json }.to change { Material.count }.by(0)
+                                  .and change { MaterialType.count }.by(0)
+                                           .and change { Metadatum.count }.by(0)
+      expect(response).to be_created
+
       response_json = JSON.parse(response.body, symbolize_names: true)
 
-      new_material_batch = MaterialBatch.find(@material_batch.id)
-
-      new_material_batch.materials.zip(@material_batch.materials).each { |new_material, old_material|
-        expect(new_material.name).to eq(old_material.name + "_changed")
+      expect(response_json[:data][:relationships][:materials][:data].size).to eq(material_batch.materials.size)
+      response_json[:data][:relationships][:materials][:data].zip(material_batch.materials).each { |material_json, material|
+        expect(material_json[:id]).to eq(material.uuid)
+        expect(response_json[:included].find { |included| included[:type] == "materials" and included[:id] == material.uuid }[:attributes][:name]).to eq(material.name)
       }
     end
 
-    it 'should leave the other materials unchanged' do
-      @material_batch = create(:material_batch_with_metadata)
-      material = @material_batch.materials[1]
-      material.name += '_changed'
+    it 'should create a material_batch with existing materials and edit the materials' do
+      material_batch = build(:material_batch, materials: create_list(:material, 3))
 
       @material_batch_json = {
           data: {
               relationships: {
                   materials: {
-                      data: [{
+                      data: material_batch.materials.map { |material| {
                           id: material.uuid,
                           attributes: {
-                              name: material.name
+                              name: "#{material.name}_changed"
                           }
-                      }]
+                      }}
                   }
               }
           }
       }
 
-      expect { update_material_batch }.to  change { MaterialBatch.count }.by(0)
-                                      .and change { Material.count }.by(0)
-                                      .and change { MaterialType.count }.by(0)
-                                      .and change { Metadatum.count }.by(0)
-      expect(response).to be_success
+      expect { post_json }.to change { Material.count }.by(0)
+                                  .and change { MaterialType.count }.by(0)
+                                           .and change { Metadatum.count }.by(0)
+      expect(response).to be_created
+
       response_json = JSON.parse(response.body, symbolize_names: true)
 
-      new_material_batch = MaterialBatch.find(@material_batch.id)
+      expect(response_json[:data][:relationships][:materials][:data].size).to eq(material_batch.materials.size)
+      response_json[:data][:relationships][:materials][:data].zip(material_batch.materials).each { |material_json, material|
+        expect(material_json[:id]).to eq(material.uuid)
+        expect(response_json[:included].find { |included| included[:type] == "materials" and included[:id] == material.uuid }[:attributes][:name]).to eq("#{material.name}_changed")
 
-      new_material_batch.materials.zip(@material_batch.materials).each { |new_material, old_material|
-        expect(new_material.name).to eq(old_material.name)
-      }
-    end
-
-    it "should not allow materials to be added to an existing batch" do
-      @material_batch = create(:material_batch_with_metadata)
-      material = create(:material_with_metadata)
-
-      @material_batch_json = {
-          data: {
-              relationships: {
-                  materials: {
-                      data: [
-                          id: material.uuid,
-                      ]
-                  }
-              }
-          }
-      }
-
-      expect { update_material_batch }.to change  { MaterialBatch.count }.by(0)
-                                      .and change { Material.count }.by(0)
-                                      .and change { MaterialType.count }.by(0)
-                                      .and change { Metadatum.count }.by(0)
-                                      .and change { @material_batch.materials.count }.by(0)
-      expect(response).to be_unprocessable
-      response_json = JSON.parse(response.body, symbolize_names: true)
-
-      expect(response_json).to include(:materials)
-      expect(response_json[:materials]).to include('can\'t be added to an existing batch')
-    end
-
-    it 'should not allow new materials to be created in an existing batch' do
-      @material_batch = create(:material_batch_with_metadata)
-      material = build(:material_with_metadata, material_type: create(:material_type))
-
-      @material_batch_json = {
-          data: {
-              relationships: {
-                  materials: {
-                      data: [
-                          {
-                              attributes: {
-                                  name: material.name
-                              },
-                              relationships: {
-                                  material_type: {
-                                      data: {
-                                          attributes: {
-                                              name: material.material_type.name
-                                          }
-                                      }
-                                  },
-                                  metadata: {
-                                      data: material.metadata.map{ |metadatum| {
-                                          attributes: {
-                                              key: metadatum.key,
-                                              value: metadatum.value
-                                          }
-                                      }}
-                                  }
-                              }
-                          }
-                      ]
-                  }
-              }
-          }
-      }
-
-      expect { update_material_batch }.to change  { MaterialBatch.count }.by(0)
-                                      .and change { Material.count }.by(0)
-                                      .and change { MaterialType.count }.by(0)
-                                      .and change { Metadatum.count }.by(0)
-                                      .and change { @material_batch.materials.count }.by(0)
-      expect(response).to be_unprocessable
-      response_json = JSON.parse(response.body, symbolize_names: true)
-
-      expect(response_json).to include(:'materials')
-      expect(response_json[:'materials']).to include('can\'t be added to an existing batch')
-    end
-
-    it 'should rollback completely if invalid' do
-      @material_batch = create(:material_batch_with_metadata)
-
-      @material_batch_json = {
-          data: {
-              attributes: {
-                  name: 'new_batch_name'
-              },
-              relationships: {
-                  materials: {
-                      data: [
-                          {
-                              id: @material_batch.materials.first.uuid,
-                              attributes: {
-                                  name: 'new_material_name'
-                              }
-                          },
-                          {
-                              id: @material_batch.materials.first.uuid,
-                              attributes: {
-                                  name: ''
-                              }
-                          }
-                      ]
-                  }
-              }
-          }
-      }
-
-      expect { update_material_batch }.to change { MaterialBatch.count }.by(0)
-                                      .and change { Material.count }.by(0)
-                                      .and change { MaterialType.count }.by(0)
-                                      .and change { Metadatum.count }.by(0)
-      expect(response).to be_unprocessable
-      response_json = JSON.parse(response.body, symbolize_names: true)
-
-      new_material_batch = MaterialBatch.find(@material_batch.id)
-
-      expect(new_material_batch.name).to eq(@material_batch.name)
-      (@material_batch.materials).zip(new_material_batch.materials).each { |old_material, persisted_material|
-        expect(old_material.name).to eq(persisted_material.name)
-      }
-
-      expect(response_json).to include(:'materials.name')
-      expect(response_json[:'materials.name']).to include('can\'t be blank')
-    end
-
-    it 'should update materials with parents' do
-      @material_batch = create(:material_batch)
-      parent = create(:material)
-
-      @material_batch_json = {
-          data: {
-              relationships: {
-                  materials: {
-                      data: @material_batch.materials.map { |material| {
-                        id: material.uuid,
-                        relationships: {
-                            parents: {
-                                data: [
-                                  id: parent.uuid
-                                ]
-                            }
-                        }
-                    }}
-                  }
-              }
-          }
-      }
-
-      update_material_batch
-      expect(response).to be_success
-
-      new_material_batch = MaterialBatch.find(@material_batch.id)
-      expect(new_material_batch.materials).to eq(@material_batch.materials)
-      new_material_batch.materials.each { |material|
-        expect(material.parents).to eq([parent])
+        expect(Material.find(material.id).name).to eq("#{material.name}_changed")
       }
     end
   end

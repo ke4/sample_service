@@ -1,6 +1,5 @@
 FactoryGirl.define do
   factory :material_batch do
-    sequence(:name) { |n| "Material batch name #{n}" }
     materials { build_list :material, 3 }
 
     factory :material_batch_with_metadata, parent: :material_batch do

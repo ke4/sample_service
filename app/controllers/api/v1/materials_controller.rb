@@ -4,21 +4,23 @@ class Api::V1::MaterialsController < Api::V1::ApplicationController
 
   # POST /materials
   def create
-    @material = Material.new(material_params)
+    material_batch = MaterialBatch.my_new(data: { relationships: { materials: { data: [material_json_params[:data]] } } })
 
-    if @material.save
-      render json: @material, status: :created, include: included_relations_to_render
+    if material_batch.save
+      render json: material_batch.materials.first, status: :created, include: included_relations_to_render
     else
-      render json: @material.errors, status: :unprocessable_entity
+      render json: material_batch.materials.first.errors, status: :unprocessable_entity
     end
   end
 
   # PATCH/PUT /materials/1
   def update
-    if @material.update(material_params)
-      render json: @material, include: included_relations_to_render
+    material_batch = MaterialBatch.my_new(data: { relationships: { materials: { data: [material_json_params[:data].merge(id: @material.uuid)] } } })
+
+    if material_batch.save
+      render json: material_batch.materials.first, include: included_relations_to_render
     else
-      render json: @material.errors, status: :unprocessable_entity
+      render json: material_batch.materials.first.errors, status: :unprocessable_entity
     end
   end
 
@@ -30,10 +32,6 @@ class Api::V1::MaterialsController < Api::V1::ApplicationController
   end
 
   # Only allow a trusted parameter "white list" through.
-  def material_params
-    build_material_params(@material, material_json_params[:data])
-  end
-
   def material_json_params
     params.permit(material_json_schema)
   end

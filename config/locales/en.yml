@@ -23,5 +23,4 @@ en:
   errors:
     messages:
       invalid_uuid: "is not a valid UUID"
-      add_to_batch: "can't be added to an existing batch"
       doesnt_exist: 'must exist'
