@@ -66,7 +66,16 @@ RSpec.describe "MaterialBatches", type: :request do
       expect(response_json[:data][:relationships][:materials][:data].size).to eq(new_materials.size)
       response_json[:data][:relationships][:materials][:data].zip(new_materials).each { |material_json, material|
         expect(material_json[:id]).to eq(material.uuid)
-        expect(response_json[:included].find { |included| included[:type] == "materials" and included[:id] == material.uuid }[:attributes][:name]).to eq(material.name)
+        included_material = response_json[:included].find { |included| included[:type] == "materials" and included[:id] == material.uuid }
+        expect(included_material[:attributes][:name]).to eq(material.name)
+        expect(included_material[:relationships][:material_type][:data][:id]).to eq(material.material_type.id.to_s)
+        expect(included_material[:relationships][:metadata][:data].count).to eq(material.metadata.count)
+        included_material[:relationships][:metadata][:data].zip(material.metadata).each { |metadatum_json, metadatum|
+          expect(metadatum_json[:id]).to eq(metadatum.id.to_s)
+          included_metadatum = response_json[:included].find { |included| included[:type] == "metadata" and included[:id] == metadatum.id.to_s}
+          expect(included_metadatum[:attributes][:key]).to eq(metadatum.key)
+          expect(included_metadatum[:attributes][:value]).to eq(metadatum.value)
+        }
       }
     end
 
