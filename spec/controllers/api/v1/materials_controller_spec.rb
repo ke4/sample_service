@@ -469,7 +469,7 @@ describe Api::V1::MaterialsController, type: :request do
       response_json = JSON.parse(response.body, symbolize_names: true)
 
       expect(response_json).to include(:material_type)
-      expect(response_json[:material_type]).to include('must exist')
+      expect(response_json[:material_type]).to include("can't be blank")
     end
 
     it 'should fail if given invalid metadata' do
@@ -878,7 +878,7 @@ describe Api::V1::MaterialsController, type: :request do
       expect(new_material.metadata.first.value).to eq(@material.metadata.first.value)
 
       expect(response_json).to include(:material_type)
-      expect(response_json[:material_type]).to include('must exist')
+      expect(response_json[:material_type]).to include("can't be blank")
     end
 
     it 'should fail if metadata is invalid' do

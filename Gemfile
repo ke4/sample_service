@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '>= 5.0.0.beta3', '< 5.1'
+gem 'rails', '>= 5.0.0', '< 5.1'
 # Use mysql2 for test and production purposes
 gem 'mysql2'
 # Use Puma as the app server
@@ -20,7 +20,7 @@ gem 'puma'
 # gem 'rack-cors'
 
 # Use ActiveModelSerializers to serialize JSON requests/responses
-gem 'active_model_serializers', '~> 0.10.0.rc4'
+gem 'active_model_serializers', '~> 0.10.0'
 
 # Allows us to use binary uuid columns.
 # Currently not working with Rails 5 beta3
@@ -33,7 +33,7 @@ gem 'activerecord-import'
 gem 'kaminari'
 
 group :test do
-  gem 'rspec-rails', '~> 3.5.0.beta3'
+  gem 'rspec-rails', '~> 3.5.0'
   gem 'factory_girl_rails'
 
   gem 'simplecov', :require => false

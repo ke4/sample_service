@@ -13,6 +13,7 @@ class Material < ApplicationRecord
 
   validates :name, presence: true
   validates :uuid, uuid: true, if: :uuid
+  validates :material_type, presence: true
 
   after_validation :generate_uuid, unless: :uuid
 
