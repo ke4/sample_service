@@ -3,9 +3,8 @@ source 'https://rubygems.org'
 gem 'rails', '4.2.6'
 
 gem 'mysql2'
-gem 'kaminari'
 gem 'uuid'
-gem 'active_model_serializers', '~> 0.10.0.rc4'
+gem 'jsonapi-resources'
 
 group :development, :test do
   gem 'byebug'

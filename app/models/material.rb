@@ -9,7 +9,6 @@ class Material < ApplicationRecord
   has_many :child_derivatives, class_name: 'MaterialDerivative', foreign_key: 'parent_id', inverse_of: :parent
   has_many :children, through: :child_derivatives
 
-
   validates :material_type, presence: true
   validates :name, presence: true
   validates :uuid, uuid: true, if: :uuid
