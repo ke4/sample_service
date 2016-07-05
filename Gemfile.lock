@@ -109,6 +109,7 @@ GEM
       nokogiri (~> 1.6.0)
     rails-html-sanitizer (1.0.3)
       loofah (~> 2.0)
+    rails-perftest (0.0.6)
     railties (5.0.0)
       actionpack (= 5.0.0)
       activesupport (= 5.0.0)
@@ -136,6 +137,7 @@ GEM
       rspec-mocks (~> 3.5.0)
       rspec-support (~> 3.5.0)
     rspec-support (3.5.0)
+    ruby-prof (0.15.9)
     simplecov (0.12.0)
       docile (~> 1.1.0)
       json (>= 1.8, < 3)
@@ -177,7 +179,9 @@ DEPENDENCIES
   mysql2
   puma
   rails (>= 5.0.0, < 5.1)
+  rails-perftest
   rspec-rails (~> 3.5.0)
+  ruby-prof
   simplecov
   spring
   spring-watcher-listen (~> 2.0.0)

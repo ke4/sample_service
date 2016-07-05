@@ -23,9 +23,6 @@
 # Ignore the coverage data
 /coverage
 
-# Ignore the profiler data
-/profile
-
 # Ignore Byebug command history file.
 .byebug_history
 

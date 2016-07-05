@@ -32,6 +32,9 @@ gem 'activerecord-import'
 # for pagination
 gem 'kaminari'
 
+gem 'ruby-prof'
+gem 'rails-perftest'
+
 group :test do
   gem 'rspec-rails', '~> 3.5.0'
   gem 'factory_girl_rails'
