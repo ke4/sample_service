@@ -1,47 +1,33 @@
 source 'https://rubygems.org'
 
+
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '>= 5.0.0.beta3', '< 5.1'
+gem 'rails', '~> 5.0.0'
 # Use mysql2 for test and production purposes
 gem 'mysql2'
+
 # Use Puma as the app server
-gem 'puma'
-# Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
-# gem 'jbuilder', '~> 2.0'
-# Use Redis adapter to run Action Cable in production
-# gem 'redis', '~> 3.0'
-# Use ActiveModel has_secure_password
-# gem 'bcrypt', '~> 3.1.7'
+gem 'puma', '~> 3.0'
 
-# Use Capistrano for deployment
-# gem 'capistrano-rails', group: :development
-
-# Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
-# gem 'rack-cors'
-
-# Use ActiveModelSerializers to serialize JSON requests/responses
-gem 'active_model_serializers', '~> 0.10.0.rc4'
+gem 'jsonapi-resources'
 
 # Allows us to use binary uuid columns.
 # Currently not working with Rails 5 beta3
 #gem 'activeuuid'
 gem 'uuid'
 
-gem 'activerecord-import'
+# this gem is for bulk saving, but jsonapi-resources is covering this feature
+# gem 'activerecord-import'
 
-# for pagination
-gem 'kaminari'
-
-group :test do
-  gem 'rspec-rails', '~> 3.5.0.beta3'
-  gem 'factory_girl_rails'
-
-  gem 'simplecov', :require => false
-end
+gem 'ruby-prof'
+gem 'rails-perftest'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
-  gem 'byebug'
+  gem 'byebug', platform: :mri
+  gem 'rspec-rails'
+  gem 'factory_girl_rails'
+  gem 'simplecov', require: false
 
   # Use sqlite3 as the database for Active Record
   gem 'sqlite3'
