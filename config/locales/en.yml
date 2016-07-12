@@ -23,3 +23,7 @@
 
 en:
   hello: "Hello world"
+  errors:
+    messages:
+      invalid_uuid: "is not a valid UUID"
+      doesnt_exist: 'must exist'

@@ -9,7 +9,7 @@ gem 'mysql2'
 # Use Puma as the app server
 gem 'puma', '~> 3.0'
 
-gem 'jsonapi-resources'
+gem 'jsonapi-resources', '>= 0.7.1.beta2'
 
 # Allows us to use binary uuid columns.
 # Currently not working with Rails 5 beta3
