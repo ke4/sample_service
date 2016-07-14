@@ -51,10 +51,10 @@ RSpec.describe "Materials", type: :request do
     let(:serialized_material_json) {
       JSONAPI::ResourceSerializer.new(
         Api::V1::MaterialResource,
-        include: ['material_type']
+        include: ['material_type', 'metadata']
       ).serialize_to_hash(Api::V1::MaterialResource.new(@material, nil)).tap do |json|
-        json[:data]["attributes"]["uuid"] = @material_uuid if (@material_uuid)
         json[:data].except!("links")
+        json[:data]["attributes"]["uuid"] = @material_uuid if (@material_uuid)
       end
     }
 
@@ -108,6 +108,10 @@ RSpec.describe "Materials", type: :request do
       uuid_error_str = material_json[:errors].select { |obj| obj[:title] == 'is not a valid UUID' }[0]
       expect(uuid_error_str[:detail]).to include('is not a valid UUID')
     end
+
+    it "should create a material instance with metadata" do
+      # TODO write the test for it
+    end
   end
 
   describe "PUT #update" do
@@ -121,16 +125,15 @@ RSpec.describe "Materials", type: :request do
     let(:serialized_material_json) {
       JSONAPI::ResourceSerializer.new(
         Api::V1::MaterialResource,
-        include: ['material_type']
+        include: ['material_type', 'metadata']
       ).serialize_to_hash(Api::V1::MaterialResource.new(@material, nil)).tap do |json|
         json[:data].except!("links")
         json.except!(:included)
-        # json[:data].except!("relationships")
-        json[:data]["attributes"] = {}
 
+        json[:data]["attributes"] = {}
         json[:data]["attributes"]["name"] ||= @new_name if (@new_name)
         json[:data]["attributes"]["uuid"] ||= @new_uuid if (@new_uuid)
-        # json[:data]["relationships"] = {}
+
         json[:data]["relationships"]["material_type"][:data].merge!({"id" => MaterialType.find_by(name: @new_material_type.name).id }) if (@new_material_type)
       end
     }

@@ -2,6 +2,7 @@
 
 class Material < ApplicationRecord
   belongs_to :material_type
+  has_many   :metadata
 
   validates :material_type, presence: true
   validates :name, presence: true

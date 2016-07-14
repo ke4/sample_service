@@ -10,21 +10,32 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160706140333) do
+ActiveRecord::Schema.define(version: 20160712122710) do
 
-  create_table "material_types", force: :cascade do |t|
+  create_table "material_types", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
-  create_table "materials", force: :cascade do |t|
+  create_table "materials", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "name"
     t.string   "uuid"
     t.integer  "material_type_id"
     t.datetime "created_at",       null: false
     t.datetime "updated_at",       null: false
-    t.index ["material_type_id"], name: "index_materials_on_material_type_id"
+    t.index ["material_type_id"], name: "index_materials_on_material_type_id", using: :btree
+    t.index ["uuid"], name: "index_materials_on_uuid", unique: true, using: :btree
+  end
+
+  create_table "metadata", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.string   "key"
+    t.string   "value"
+    t.integer  "material_id"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
+    t.index ["key", "material_id"], name: "index_metadata_on_key_and_material_id", unique: true, using: :btree
+    t.index ["material_id"], name: "index_metadata_on_material_id", using: :btree
   end
 
 end
